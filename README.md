@@ -12,6 +12,7 @@
 - 스프링 부트
 <img width="518" alt="스크린샷 2022-12-14 오후 2 44 02" src="https://user-images.githubusercontent.com/96857599/207515758-3c53c601-b25e-43ec-88d5-cf084f799494.png">
 
+
 예전에는 Tomcat 같은 서버를 따로 빌드하고 설정하는 것이 복잡했지만, 스프링부트를 이용하면 간결해짐.
 예전에는 외부 라이브러리와의 버전 궁합에 대해 어려움을 겪었지만, 스프링부트가 알아서 해줌.
 
@@ -234,6 +235,136 @@
 #### 클라이언트가 주문서비스에 주문 생성을 하고, 회원 조회와 할인으 적용하는 것까지의 결과를 반환했다. 다음에는 정률 할인 정책으로 바꾸었을 때 깔끔하게 바꿀 수 있는지 확인할 것이다.
 
 ### 새로운 할인 정책 개발
+
+<img width="641" alt="스크린샷 2022-12-18 오후 8 11 56" src="https://user-images.githubusercontent.com/96857599/208295104-3f050dd6-49f7-4597-85d5-cb73d6e1ca52.png">
+
+1. 정률 할인 정책 클래스 생성 및 테스트 생성
+
+<img width="954" alt="스크린샷 2022-12-18 오후 8 17 45" src="https://user-images.githubusercontent.com/96857599/208295379-c10bfcb9-388d-4ef1-ab0d-b7473e049d52.png">
+
+cmd + shift + T로 테스트 생성
+
+- 성공 테스트
+
+<img width="1199" alt="스크린샷 2022-12-18 오후 8 21 21" src="https://user-images.githubusercontent.com/96857599/208295527-7dd531b0-ca4b-49c1-84af-d82893716ae7.png">
+
+- 실패 테스트
+
+<img width="1199" alt="스크린샷 2022-12-18 오후 8 24 05" src="https://user-images.githubusercontent.com/96857599/208295675-2274210a-5d2a-4521-9ad0-41428d59dfb9.png">
+
+- 동시 테스트
+
+<img width="1199" alt="스크린샷 2022-12-18 오후 8 25 08" src="https://user-images.githubusercontent.com/96857599/208295738-0af59391-4ebc-4c18-aae4-7908cbbfc43c.png">
+
+- 원래 할인 정책에 대한 테스트는 실무에서 경계값을 모두 테스트 해볼 정도로 어려운 테스트이지만 지금은 예제로 공부하는 상태이고, 객체지향적인 코드를 만들었기 때문에 간단하게 할 수 있었다.
+
+<img width="561" alt="스크린샷 2022-12-18 오후 8 27 33" src="https://user-images.githubusercontent.com/96857599/208295831-5ac95238-9f73-4a4f-9b56-fe3bfd18e64c.png">
+
+이렇게 간단하지 않다..
+
+### 새로운 할인 정책 적용과 문제점
+
+새로운 할인 정책인 정률 할인 정책을 OrderServiceImpl에 적용해본다.
+<img width="1207" alt="스크린샷 2022-12-18 오후 8 29 53" src="https://user-images.githubusercontent.com/96857599/208295924-9d79b39b-31d0-42f1-ba72-ede50ebf6146.png">
+
+문제점 발견
+- 우리는 역할과 구현을 충실하게 분리했다. -> OK
+- 다형성도 활용하고, 인터페이스와 구현 객체를 분리했다. -> OK 
+- OCP, DIP 같은 객체지향 설계 원칙을 충실히 준수했다?
+   -> 그렇게 보이지만 사실은 아니다.
+- DIP: 주문서비스 클라이언트( OrderServiceImpl )는 DiscountPolicy 인터페이스에 의존하면서 DIP를 지킨 것 같은데?
+   -> 클래스 의존관계를 분석해 보자. 추상(인터페이스) 뿐만 아니라 구체(구현) 클래스에도 의존하고 있다.
+      - 추상(인터페이스) 의존: DiscountPolicy
+      - 구체(구현) 클래스: FixDiscountPolicy , RateDiscountPolicy 
+
+<img width="628" alt="스크린샷 2022-12-18 오후 8 37 43" src="https://user-images.githubusercontent.com/96857599/208296234-3eed8475-9b7f-4969-95b9-0185da13406b.png">
+
+
+<img width="640" alt="스크린샷 2022-12-18 오후 8 35 47" src="https://user-images.githubusercontent.com/96857599/208296163-3ff71114-0d4a-43c5-bfba-333fdaab6d5e.png">
+
+또한, 할인 정책을 변경하는 순간
+
+<img width="615" alt="스크린샷 2022-12-18 오후 8 38 13" src="https://user-images.githubusercontent.com/96857599/208296258-1612534d-667b-4f2f-8b7b-23c6f6d07c2a.png">
+
+<img width="641" alt="스크린샷 2022-12-18 오후 8 38 33" src="https://user-images.githubusercontent.com/96857599/208296271-8e7275a2-1428-4443-bfa6-d18090bfe49c.png">
+
+- OCP: 변경하지 않고 확장할 수 있다고 했는데!
+   -> 지금 코드는 기능을 확장해서 변경하면, 클라이언트 코드에 영향을 준다! 따라서 OCP를 위반한다.
+
+## 어떻게 문제를 해결할 수 있을까?
+
+- 클라이언트 코드인 OrderServiceImpl은 DiscountPolicy의 인터페이스 뿐만 아니라 구체 클래스도 함께 의존한다.
+- 그래서 구체 클래스를 변경할 때 클라이언트 코드도 함께 변경해야 한다.
+- DIP 위반 -> 추상에만 의존하도록 변경(인터페이스에만 의존)
+- DIP를 위반하지 않도록 인터페이스에만 의존하도록 의존관계를 변경하면 된다.
+
+- 인터페이스에만 의존하도록 설계를 변경하자.
+
+<img width="639" alt="스크린샷 2022-12-18 오후 8 40 47" src="https://user-images.githubusercontent.com/96857599/208296357-0870a75d-626d-47c3-b8ac-803ab0d84e36.png">
+
+<img width="755" alt="스크린샷 2022-12-18 오후 8 42 01" src="https://user-images.githubusercontent.com/96857599/208296409-170be7a9-d07c-4fe3-bab5-284155cbad2e.png">
+
+- 인터페이스에만 의존하도록 설계와 코드를 변경했다.
+- 그런데 구현체가 없는데 어떻게 코드를 실행할 수 있을까?
+- 실제 실행을 해보면 NPE(null pointer exception)가 발생한다. -> 당연하게도 discountPolicy는 현재 인터페이스이므로 비어있다.
+<img width="1258" alt="스크린샷 2022-12-18 오후 8 44 15" src="https://user-images.githubusercontent.com/96857599/208296487-42fe98ce-5d0c-4157-93d4-ade4583de0f1.png">
+
+#### 해결방안
+
+- 이 문제를 해결하려면 누군가가 클라이언트인 OrderServiceImpl에 DiscountPolicy의 구현 객체를 대신 생성하고 주입해주어야 한다.
+
+### 관심사의 분리
+
+#### AppConfig 등장
+
+애플리케이션의 전체 동작 방식을 구성(config)하기 위해, **구현 객체를 생성**하고, **연결**하는 책임을 가지는 별도의 설정 클래스를 만들자.
+
+#### MemberServiceImpl에서 MemberRepository를 바로 MemoryMemberRepository로 지정하는 것이 아니라, 생성자를 만들고, AppConfig에서 설정하도록 변경한다. 즉, AppConfig에서 어떤 구현체를 사용할지 정할 수 있도록 바꾸고, MemberServiceImpl같은 클라이언트가 직접 구현 클래스를 의존하는 것을 막고 연결시키는 것이다.
+
+- AppConfig에서 MemberService가 사용할 repository를 설정할 수 있도록 한다.
+<img width="1364" alt="스크린샷 2022-12-18 오후 8 51 52" src="https://user-images.githubusercontent.com/96857599/208296819-6e6dd87a-4a4d-48f6-9f8b-df2b5f17c426.png">
+
+- 구현체와의 직접 연결을 끊고 생성자를 만든다.
+<img width="1305" alt="스크린샷 2022-12-18 오후 8 55 36" src="https://user-images.githubusercontent.com/96857599/208296984-c3b95eeb-15b5-4be5-b69c-c879560ab728.png">
+
+- AppConfig에서 MemberService와 MemoryMemberRepository를 연결해준다.
+<img width="1430" alt="스크린샷 2022-12-18 오후 9 13 00" src="https://user-images.githubusercontent.com/96857599/208297714-63ed2480-c409-457e-8519-a772ae892389.png">
+
+#### 마찬가지로 OrderServiceImpl도 바꾸어준다.
+
+- AppConfig에서 OrderService가 사용할 repository와 할인 정책을 설정할 수 있도록 한다.
+<img width="1430" alt="스크린샷 2022-12-18 오후 9 11 15" src="https://user-images.githubusercontent.com/96857599/208297645-1aedb884-8c2b-4a4f-92fe-d65537ad65cd.png">
+
+- 구현체와의 직접 연결을 끊고 생성자를 만든다.
+<img width="1430" alt="스크린샷 2022-12-18 오후 9 11 35" src="https://user-images.githubusercontent.com/96857599/208297657-34e4dc0c-cd9b-48ca-b59a-ef05174eafb8.png">
+
+- AppConfig에서 OrderService와 MemoryMemberRepository, RateDiscountPolicy를 연결해준다.
+<img width="1430" alt="스크린샷 2022-12-18 오후 9 11 47" src="https://user-images.githubusercontent.com/96857599/208297661-98a6a4cf-bb3d-4298-89ee-3ffc1b5ef7c2.png">
+
+그림 - 클래스 다이어그램
+
+<img width="641" alt="스크린샷 2022-12-18 오후 9 48 00" src="https://user-images.githubusercontent.com/96857599/208299209-b236fbae-9d31-4bd2-9bc4-95c41921cfce.png">
+
+그림 - 회원 객체 인스턴스 다이어그램
+<img width="640" alt="스크린샷 2022-12-18 오후 9 48 45" src="https://user-images.githubusercontent.com/96857599/208299262-ea277d89-84bf-4d98-8bcd-373f4183c1bc.png">
+
+#### main 클래스 테스트 DI 변경 후 실행
+
+- MemberApp 실행에서 필요한 memberService 인터페이스에 AppConfig에서 설정한 MemoryMemberRepository를 주입한 memberService 객체를 생성한다.
+<img width="1226" alt="스크린샷 2022-12-18 오후 9 58 57" src="https://user-images.githubusercontent.com/96857599/208299746-4779bf30-4640-4f94-b6b2-ee2f8fc20af6.png">
+
+- OrderApp 실행에서 필요한 memberService 인터페이스, orderService 인터페이스에 AppConfig에서 설정한 MemoryMemberRepository를 주입한 memberService 객체와 FixDiscountPolicy를 주입한 orderService를 생성 한다.
+
+#### Junit 테스트 DI 변경 후 실행
+
+- 테스트의 가장 처음에 memberService를 AppConfig에서 가져온다.
+<img width="1043" alt="스크린샷 2022-12-18 오후 10 12 36" src="https://user-images.githubusercontent.com/96857599/208300314-58aac663-9bdb-4d62-98a3-d8120de52d71.png">
+
+- 테스트의 가장 처음에 memberService와 orderService를 AppConfig에서 가져온다.
+<img width="1043" alt="스크린샷 2022-12-18 오후 10 14 16" src="https://user-images.githubusercontent.com/96857599/208300379-4f0abee7-e2b6-4312-adb2-228b1f574802.png">
+
+
+
 
 
 
