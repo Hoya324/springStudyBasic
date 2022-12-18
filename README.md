@@ -363,6 +363,38 @@ cmd + shift + T로 테스트 생성
 - 테스트의 가장 처음에 memberService와 orderService를 AppConfig에서 가져온다.
 <img width="1043" alt="스크린샷 2022-12-18 오후 10 14 16" src="https://user-images.githubusercontent.com/96857599/208300379-4f0abee7-e2b6-4312-adb2-228b1f574802.png">
 
+### AppConfig 리팩터링
+- 현재 AppConfig를 보면 **중복**이 있고, **역할**에 따른 **구현**이 잘 안 보인다.
+
+기대하는 그림
+<img width="639" alt="스크린샷 2022-12-18 오후 10 18 48" src="https://user-images.githubusercontent.com/96857599/208300593-a3085576-7900-4209-842f-07f84f15ed2f.png">
+
+리팩터링 전
+<img width="1321" alt="스크린샷 2022-12-18 오후 10 19 23" src="https://user-images.githubusercontent.com/96857599/208300613-223650da-9731-42e5-a8c2-97f0250caf7b.png">
+
+**TIP💡 cmd + option + M을 누르면 method를 추가할 수 있다.**
+
+리팩토링 후
+<img width="1121" alt="스크린샷 2022-12-18 오후 10 25 39" src="https://user-images.githubusercontent.com/96857599/208300873-cc288d73-4a27-4701-9841-8c596803f695.png">
+
+- new MemoryMemberRepository()이 부분이 중복 제거되었다. 이제 MemoryMemberRepository를 다른 구현체로 변경할 때 한 부분만 변경하면 된다.
+- AppConfig를 보면 역할과 구현 클래스가 한눈에 들어온다. 애플리케이션 전체 구성이 어떻게 되어있는지 빠르게 파악할 수 있다.
+
+### 새로운 구조와 할인 정책 적용
+
+- AppConfig의 등장으로 애플리케이션이 크게 사용 영역과, 객체를 생성하고 구성(Configuration)하는 영역으로 분리되었다.
+
+<img width="640" alt="스크린샷 2022-12-18 오후 10 29 55" src="https://user-images.githubusercontent.com/96857599/208301072-d7b03eef-989b-4867-9463-c2b947e782f3.png">
+
+<img width="1297" alt="스크린샷 2022-12-18 오후 10 31 04" src="https://user-images.githubusercontent.com/96857599/208301104-ad8d27bc-7b1e-4879-a8b5-147454559f48.png">
+
+- AppConfig에서 할인 정책 역할을 담당하는 구현을 FixDiscountPolicy 객체로 변경했다.
+- 이제 할인 정책을 변경해도, 애플리케이션의 구성 역할을 담당하는 AppConfig만 변경하면 된다. 클라이언트 코드인 OrderServiceImpl를 포함해서 사용 영역의 어떤 코드도 변경할 필요가 없다.
+- 구성 영역은 당연히 변경된다. 구성 역할을 담당하는 AppConfig를 애플리케이션이라는 공연의 기획자로 생각하자. 공연 기획자는 공연 참여자인 구현 객체들을 모두 알아야 한다.
+
+
+
+
 
 
 
