@@ -221,3 +221,20 @@
 
 <img width="1270" alt="스크린샷 2022-12-18 오후 3 33 49" src="https://user-images.githubusercontent.com/96857599/208284910-80404c77-8ac4-4bea-aedf-222263ed57d5.png">
 
+### 주문과 할인 도메인 실행과 테스트
+
+1. OrderApp으로 order 실행테스트
+
+<img width="1100" alt="스크린샷 2022-12-18 오후 7 45 39" src="https://user-images.githubusercontent.com/96857599/208294048-72fa8279-c755-4c71-8787-a3df80b137f6.png">
+
+2. Junit으로 테스트
+
+<img width="1332" alt="스크린샷 2022-12-18 오후 8 05 22" src="https://user-images.githubusercontent.com/96857599/208294853-9b38b60e-809a-4c30-bac2-4eda340bece1.png">
+
+#### 클라이언트가 주문서비스에 주문 생성을 하고, 회원 조회와 할인으 적용하는 것까지의 결과를 반환했다. 다음에는 정률 할인 정책으로 바꾸었을 때 깔끔하게 바꿀 수 있는지 확인할 것이다.
+
+### 새로운 할인 정책 개발
+
+
+
+
