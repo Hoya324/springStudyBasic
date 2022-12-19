@@ -422,7 +422,145 @@ cmd + shift + T로 테스트 생성
 - 소프트웨어 요소를 새롭게 확장해도 사용 영역의 변경은 닫혀 있다!
 
 
+### IoC, DI, 그리고 컨테이너
 
+#### 제어의 역전 IoC(Inversion of Control)
+- 기존 프로그램은 클라이언트 구현 객체가 스스로 필요한 서버 구현 객체를 생성하고, 연결하고, 실행했다. 한마디로 구현 객체가 프로그램의 제어 흐름을 스스로 조종했다. 개발자 입장에서는 자연스러운 흐름이다.
+- 반면에 AppConfig가 등장한 이후에 구현 객체는 자신의 로직을 실행하는 역할만 담당한다. 프로그램의 제어 흐름은 이제 AppConfig가 가져간다. 예를 들어서 OrderServiceImpl은 필요한 인터페이스들을 호출하지만 어떤 구현 객체들이 실행될지 모른다.
+- 프로그램에 대한 제어 흐름에 대한 권한은 모두 AppConfig가 가지고 있다. 심지어 OrderServiceImpl 도 AppConfig가 생성한다. 그리고 AppConfig는 OrderServiceImpl이 아닌 OrderService 인터페이스의 다른 구현 객체를 생성하고 실행할 수도 있다. 그런 사실도 모른체 OrderServiceImpl은 묵묵히 자신의 로직을 실행할 뿐이다.
+- 이렇듯 프로그램의 제어 흐름을 직접 제어하는 것이 아니라 외부(AppConfig)에서 관리하는 것을 제어의 역전(IoC)이라 한다.
+
+
+#### 프레임워크 vs 라이브러리
+- 프레임워크가 내가 작성한 코드를 제어하고, 대신 실행하면 그것은 프레임워크가 맞다. (JUnit)
+<img width="1007" alt="스크린샷 2022-12-19 오후 1 12 29" src="https://user-images.githubusercontent.com/96857599/208346119-48c9c1c5-a568-499a-a43d-74f3a81c1533.png">
+
+- 반면에 내가 작성한 코드가 직접 제어의 흐름을 담당한다면 그것은 프레임워크가 아니라 라이브러리다.
+
+
+#### 의존관계 주입 DI(Dependency Injection)
+- OrderServiceImpl 은 DiscountPolicy 인터페이스에 의존한다. 실제 어떤 구현 객체가 사용될지는
+모른다.
+- 의존관계는 정적인 클래스 의존 관계와, 실행 시점에 결정되는 동적인 객체(인스턴스) 의존 관계 둘을 분리해서 생각해야 한다.
+
+
+#### 정적인 클래스 의존관계
+클래스가 사용하는 import 코드만 보고 의존관계를 쉽게 판단할 수 있다. 정적인 의존관계는 애플리케이션을 실행하지 않아도 분석할 수 있다. 클래스 다이어그램을 보자
+OrderServiceImpl은 MemberRepository, DiscountPolicy에 의존한다는 것을 알 수 있다.
+그런데 이러한 클래스 의존관계 만으로는 실제 어떤 객체가 OrderServiceImpl에 주입 될지 알 수 없다.
+- 클래스 다이어그램
+<img width="633" alt="스크린샷 2022-12-19 오후 1 16 47" src="https://user-images.githubusercontent.com/96857599/208346532-fe9f4a64-bd29-442f-8050-317affff4857.png">
+
+
+#### 동적인 객체 인스턴스 의존 관계
+애플리케이션 실행 시점에 실제 생성된 객체 인스턴스의 참조가 연결된 의존관계이다.
+
+<img width="641" alt="스크린샷 2022-12-19 오후 1 20 51" src="https://user-images.githubusercontent.com/96857599/208346910-1119d0ef-ac9f-42a4-a890-8abebbd6ec77.png">
+
+#### IoC 컨테이너, DI 컨테이너
+- AppConfig 처럼 객체를 생성하고 관리하면서 의존관계를 연결해 주는 것을 IoC 컨테이너 또는 DI 컨테이너라 한다.
+- 의존관계 주입에 초점을 맞추어 최근에는 주로 DI 컨테이너라 한다.
+- 또는 어샘블러, 오브젝트 팩토리 등으로 불리기도 한다.
+
+## 스프링으로의 전환
+
+1. AppConfig에서 @Configuration을 붙임으로써 애플리케이션의 구성, 설정 정보를 나타내는 것을 알린다.
+2. @Bean을 각각의 메소드에 붙이면 스프링 컨테이너에 등록됨.
+<img width="1406" alt="스크린샷 2022-12-19 오후 1 35 01" src="https://user-images.githubusercontent.com/96857599/208348617-299723d9-b43d-4b83-b21a-fbb817f762f4.png">
+
+3. MemberApp에서 spring 컨테이너를 통해 위에서 등록한 메소드를 찾아 실행한다.
+
+<img width="1406" alt="스크린샷 2022-12-19 오후 1 34 40" src="https://user-images.githubusercontent.com/96857599/208348527-b5016600-3a4c-43e3-a52d-e59c01b1f3ca.png">
+
+3-1. 등록된 내역을 확인할 수 있다.
+
+<img width="1363" alt="스크린샷 2022-12-19 오후 1 36 26" src="https://user-images.githubusercontent.com/96857599/208348864-90814507-0c6b-432c-90b3-b3b41f8645e3.png">
+
+4. OrderApp에서도 마찬가지다.
+<img width="1373" alt="스크린샷 2022-12-19 오후 1 42 00" src="https://user-images.githubusercontent.com/96857599/208349437-7546c805-96dd-4f04-a166-12eaf8363b64.png">
+
+#### 스프링 컨테이너
+- ApplicationContext를 스프링 컨테이너라 한다.
+- 기존에는 개발자가 AppConfig를 사용해서 직접 객체를 생성하고 DI를 했지만, 이제부터는 스프링 컨테이너를 통해서 사용한다.
+- 스프링 컨테이너는 @Configuration이 붙은 AppConfig를 설정(구성) 정보로 사용한다. 여기서 @Bean 이라 적힌 메서드를 모두 호출해서 반환된 객체를 스프링 컨테이너에 등록한다. 이렇게 스프링 컨테이너에 등록된 객체를 **스프링 빈**이라 한다.
+- 스프링 빈은 @Bean 이 붙은 메서드의 명을 스프링 빈의 이름으로 사용한다. ( memberService , orderService )
+- 이전에는 개발자가 필요한 객체를 AppConfig를 사용해서 직접 조회했지만, 이제부터는 스프링 컨테이너를 통해서 필요한 스프링 빈(객체)를 찾아야 한다. 스프링 빈은 applicationContext.getBean() 메서드를 사용해서 찾을 수 있다.
+- 기존에는 개발자가 직접 자바코드로 모든 것을 했다면 이제부터는 스프링 컨테이너에 객체를 스프링 빈으로 등록하고, 스프링 컨테이너에서 스프링 빈을 찾아서 사용하도록 변경되었다.
+
+- 코드가 약간 더 복잡해진 것 같은데, 스프링 컨테이너를 사용하면 어떤 장점이 있을까?????
+
+### 스프링 컨테이너와 스프링 빈
+
+```java
+//스프링 컨테이너 생성
+ApplicationContext applicationContext =
+                            new
+    AnnotationConfigApplicationContext(AppConfig.class);
+```
+- ApplicationContext 를 스프링 컨테이너라 한다.
+- ApplicationContext 는 인터페이스이다.
+- 스프링 컨테이너는 XML을 기반으로 만들 수 있고, 애노테이션 기반의 자바 설정 클래스로 만들 수 있다.
+- 직전에 AppConfig 를 사용했던 방식이 애노테이션 기반의 자바 설정 클래스로 스프링 컨테이너를 만든
+것이다.
+- 자바 설정 클래스를 기반으로 스프링 컨테이너( ApplicationContext )를 만들어보자.
+  - new AnnotationConfigApplicationContext(AppConfig.class);
+  - 이 클래스는 ApplicationContext 인터페이스의 구현체이다.
+  
+  
+> 참고: 더 정확히는 스프링 컨테이너를 부를 때 BeanFactory, ApplicationContext로 구분해서 이야기한다. 이 부분은 뒤에서 설명하겠다. BeanFactory를 직접 사용하는 경우는 거의 없으므로 일반적으로 ApplicationContext를 스프링 컨테이너라 한다.
+
+#### 스프링 컨테이너 생성 과정
+
+1. 스프링 컨테이너 생성
+<img width="526" alt="스크린샷 2022-12-19 오후 10 21 40" src="https://user-images.githubusercontent.com/96857599/208435345-8d9eebb3-cacd-461e-b8f4-c2300dfbd82a.png">
+- new AnnotationConfigApplicationContext(AppConfig.class)
+- 스프링 컨테이너를 생성할 때는 구성 정보를 지정해주어야 한다.
+- 여기서는 AppConfig.class 를 구성 정보로 지정했다.
+
+2. 스프링 빈 등록
+<img width="526" alt="스크린샷 2022-12-19 오후 10 22 24" src="https://user-images.githubusercontent.com/96857599/208435476-fddebc00-9e57-42e9-a008-36506cdc0a02.png">
+
+- 스프링 컨테이너는 파라미터로 넘어온 설정 클래스 정보를 사용해서 스프링 빈을 등록한다.
+
+**빈 이름**
+
+- 빈 이름은 메서드 이름을 사용한다.
+- 빈 이름을 직접 부여할 수 도 있다.
+  - @Bean(name="memberService2")
+  
+> 주의: 빈 이름은 항상 다른 이름을 부여해야 한다. 같은 이름을 부여하면, 다른 빈이 무시되거나, 기존 빈을 덮어버리거나 설정에 따라 오류가 발생한다.
+
+3. 스프링 빈 의존관계 설정 - 준비
+<img width="528" alt="스크린샷 2022-12-19 오후 10 23 36" src="https://user-images.githubusercontent.com/96857599/208435676-b4995556-d910-40b3-b9f3-81d51a8e29aa.png">
+
+4. 스프링 빈 의존관계 설정 - 완료
+<img width="527" alt="스크린샷 2022-12-19 오후 10 23 49" src="https://user-images.githubusercontent.com/96857599/208435718-9b790dba-763a-46cd-9d84-61c3d10fffb3.png">
+
+- 스프링 컨테이너는 설정 정보를 참고해서 의존관계를 주입(DI)한다.
+- 단순히 자바 코드를 호출하는 것 같지만, 차이가 있다. 이 차이는 뒤에 싱글톤 컨테이너에서 설명한다.
+
+
+**참고**
+스프링은 빈을 생성하고, 의존관계를 주입하는 단계가 나누어져 있다. 그런데 이렇게 자바 코드로 스프링 빈을 등록하면 생성자를 호출하면서 의존관계 주입도 한번에 처리된다. 여기서는 이해를 돕기 위해 개념적으로 나누어 설명했다. 자세한 내용은 의존관계 자동 주입에서 다시 설명하겠다.
+
+
+### 컨테이너에 등록된 모든 빈 조회
+
+1. 스프링 컨테이너에 실제 스프링 빈들이 잘 등록되었는지 확인.
+
+**TIP💡 리스트 형식의 객체가 있을 때, iter + tap을 누르면 for문이 자동 생성된다.
+
+- 전체 빈 확인
+<img width="1235" alt="스크린샷 2022-12-19 오후 10 44 03" src="https://user-images.githubusercontent.com/96857599/208439404-b6ce1bf8-66ec-4187-8c5b-a217680a8665.png">
+
+- 내가 입력한 스프링 빈만 보고싶을 때(혹은 스프링 내부에서 사용하는 빈을 보고싶을 때는 Role ROLE_INFRASTRUCTURE)
+
+<img width="1235" alt="스크린샷 2022-12-19 오후 10 45 53" src="https://user-images.githubusercontent.com/96857599/208439740-64e636a2-5b2d-4c40-b0a4-c99e64a4feae.png">
+
+- ac.getBeanDefinitionNames() : 스프링에 등록된 모든 빈 이름을 조회한다.
+- ac.getBean() : 빈 이름으로 빈 객체(인스턴스)를 조회한다.
+
+### 
 
 
 
