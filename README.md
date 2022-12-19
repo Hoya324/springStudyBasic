@@ -491,6 +491,76 @@ OrderServiceImpl은 MemberRepository, DiscountPolicy에 의존한다는 것을 �
 
 ### 스프링 컨테이너와 스프링 빈
 
+```java
+//스프링 컨테이너 생성
+ApplicationContext applicationContext =
+                            new
+    AnnotationConfigApplicationContext(AppConfig.class);
+```
+- ApplicationContext 를 스프링 컨테이너라 한다.
+- ApplicationContext 는 인터페이스이다.
+- 스프링 컨테이너는 XML을 기반으로 만들 수 있고, 애노테이션 기반의 자바 설정 클래스로 만들 수 있다.
+- 직전에 AppConfig 를 사용했던 방식이 애노테이션 기반의 자바 설정 클래스로 스프링 컨테이너를 만든
+것이다.
+- 자바 설정 클래스를 기반으로 스프링 컨테이너( ApplicationContext )를 만들어보자.
+  - new AnnotationConfigApplicationContext(AppConfig.class);
+  - 이 클래스는 ApplicationContext 인터페이스의 구현체이다.
+  
+  
+> 참고: 더 정확히는 스프링 컨테이너를 부를 때 BeanFactory, ApplicationContext로 구분해서 이야기한다. 이 부분은 뒤에서 설명하겠다. BeanFactory를 직접 사용하는 경우는 거의 없으므로 일반적으로 ApplicationContext를 스프링 컨테이너라 한다.
+
+#### 스프링 컨테이너 생성 과정
+
+1. 스프링 컨테이너 생성
+<img width="526" alt="스크린샷 2022-12-19 오후 10 21 40" src="https://user-images.githubusercontent.com/96857599/208435345-8d9eebb3-cacd-461e-b8f4-c2300dfbd82a.png">
+- new AnnotationConfigApplicationContext(AppConfig.class)
+- 스프링 컨테이너를 생성할 때는 구성 정보를 지정해주어야 한다.
+- 여기서는 AppConfig.class 를 구성 정보로 지정했다.
+
+2. 스프링 빈 등록
+<img width="526" alt="스크린샷 2022-12-19 오후 10 22 24" src="https://user-images.githubusercontent.com/96857599/208435476-fddebc00-9e57-42e9-a008-36506cdc0a02.png">
+
+- 스프링 컨테이너는 파라미터로 넘어온 설정 클래스 정보를 사용해서 스프링 빈을 등록한다.
+
+**빈 이름**
+
+- 빈 이름은 메서드 이름을 사용한다.
+- 빈 이름을 직접 부여할 수 도 있다.
+  - @Bean(name="memberService2")
+  
+> 주의: 빈 이름은 항상 다른 이름을 부여해야 한다. 같은 이름을 부여하면, 다른 빈이 무시되거나, 기존 빈을 덮어버리거나 설정에 따라 오류가 발생한다.
+
+3. 스프링 빈 의존관계 설정 - 준비
+<img width="528" alt="스크린샷 2022-12-19 오후 10 23 36" src="https://user-images.githubusercontent.com/96857599/208435676-b4995556-d910-40b3-b9f3-81d51a8e29aa.png">
+
+4. 스프링 빈 의존관계 설정 - 완료
+<img width="527" alt="스크린샷 2022-12-19 오후 10 23 49" src="https://user-images.githubusercontent.com/96857599/208435718-9b790dba-763a-46cd-9d84-61c3d10fffb3.png">
+
+- 스프링 컨테이너는 설정 정보를 참고해서 의존관계를 주입(DI)한다.
+- 단순히 자바 코드를 호출하는 것 같지만, 차이가 있다. 이 차이는 뒤에 싱글톤 컨테이너에서 설명한다.
+
+
+**참고**
+스프링은 빈을 생성하고, 의존관계를 주입하는 단계가 나누어져 있다. 그런데 이렇게 자바 코드로 스프링 빈을 등록하면 생성자를 호출하면서 의존관계 주입도 한번에 처리된다. 여기서는 이해를 돕기 위해 개념적으로 나누어 설명했다. 자세한 내용은 의존관계 자동 주입에서 다시 설명하겠다.
+
+
+### 컨테이너에 등록된 모든 빈 조회
+
+1. 스프링 컨테이너에 실제 스프링 빈들이 잘 등록되었는지 확인.
+
+**TIP💡 리스트 형식의 객체가 있을 때, iter + tap을 누르면 for문이 자동 생성된다.
+
+- 전체 빈 확인
+<img width="1235" alt="스크린샷 2022-12-19 오후 10 44 03" src="https://user-images.githubusercontent.com/96857599/208439404-b6ce1bf8-66ec-4187-8c5b-a217680a8665.png">
+
+- 내가 입력한 스프링 빈만 보고싶을 때(혹은 스프링 내부에서 사용하는 빈을 보고싶을 때는 Role ROLE_INFRASTRUCTURE)
+
+<img width="1235" alt="스크린샷 2022-12-19 오후 10 45 53" src="https://user-images.githubusercontent.com/96857599/208439740-64e636a2-5b2d-4c40-b0a4-c99e64a4feae.png">
+
+- ac.getBeanDefinitionNames() : 스프링에 등록된 모든 빈 이름을 조회한다.
+- ac.getBean() : 빈 이름으로 빈 객체(인스턴스)를 조회한다.
+
+### 
 
 
 
