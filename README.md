@@ -548,7 +548,7 @@ ApplicationContext applicationContext =
 
 1. 스프링 컨테이너에 실제 스프링 빈들이 잘 등록되었는지 확인.
 
-**TIP💡 리스트 형식의 객체가 있을 때, iter + tap을 누르면 for문이 자동 생성된다.
+** TIP💡 리스트 형식의 객체가 있을 때, iter + tap을 누르면 for문이 자동 생성된다. **
 
 - 전체 빈 확인
 <img width="1235" alt="스크린샷 2022-12-19 오후 10 44 03" src="https://user-images.githubusercontent.com/96857599/208439404-b6ce1bf8-66ec-4187-8c5b-a217680a8665.png">
@@ -560,8 +560,26 @@ ApplicationContext applicationContext =
 - ac.getBeanDefinitionNames() : 스프링에 등록된 모든 빈 이름을 조회한다.
 - ac.getBean() : 빈 이름으로 빈 객체(인스턴스)를 조회한다.
 
-### 
+### 스프링 빈 조회 - 기본
+
+#### 스프링 컨테이너에서 스프링 빈을 찾는 가장 기본적인 조회 방법
+- ac.getBean(빈이름, 타입) ac.getBean(타입)
+       
+#### 조회 대상 스프링 빈이 없으면 예외 발생
+- NoSuchBeanDefinitionException: No bean named 'xxxxx' available
+
+<img width="1412" alt="스크린샷 2022-12-24 오전 12 51 31" src="https://user-images.githubusercontent.com/96857599/209363191-8c196df3-a364-469e-8ae8-0f24d798eb84.png">
 
 
+** 참고: 구체 타입으로 조회하면 변경시 유연성이 떨어진다. **
+
+### 스프링 빈 조회 - 동일한 타입이 둘 이상
+- 타입으로 조회시 같은 타입의 스프링 빈이 둘 이상이면 오류가 발생한다. 이때는 빈 이름을 지정하자.
+- ac.getBeansOfType()을 사용하면 해당 타입의 모든 빈을 조회할 수 있다.
 
 
+- org.springframework.beans.factory.NoUniqueBeanDefinitionException 오류 발생
+
+<img width="1375" alt="스크린샷 2022-12-24 오전 12 57 48" src="https://user-images.githubusercontent.com/96857599/209363926-80ded56a-5f93-425f-85be-75133d10da5f.png">
+
+<img width="1167" alt="스크린샷 2022-12-24 오전 1 08 09" src="https://user-images.githubusercontent.com/96857599/209365201-99b88d64-22dd-4ed7-a2a5-c179a328b3a3.png">
