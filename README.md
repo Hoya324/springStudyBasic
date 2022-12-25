@@ -631,5 +631,40 @@ ApplicationContext applicationContext =
 ** TIP💡 cmd + O를 누르면 외부 라이브러리까지 볼 수 있음.
 
 <img width="1129" alt="스크린샷 2022-12-25 오전 11 30 41" src="https://user-images.githubusercontent.com/96857599/209455325-2d4a27f5-c14a-4289-b3f6-6bf3c08bed89.png">
+cmd + B
+<img width="1129" alt="스크린샷 2022-12-25 오전 11 32 19" src="https://user-images.githubusercontent.com/96857599/209455356-43e4ec6c-ed7d-4385-be59-7c239945a935.png">
 
-![Uploading 스크린샷 2022-12-25 오전 11.31.32.png…]()
+<img width="691" alt="스크린샷 2022-12-25 오전 11 33 48" src="https://user-images.githubusercontent.com/96857599/209455375-582f3e11-740f-487f-947f-9f78c7650dcc.png">
+
+
+#### 정리
+- ApplicationContext는 BeanFactory의 기능을 상속받는다.
+- ApplicationContext는 빈 관리기능 + 편리한 부가 기능을 제공한다.
+- BeanFactory를 직접 사용할 일은 거의 없다. 부가기능이 포함된 ApplicationContext를 사용한다. 
+- BeanFactory나 ApplicationContext를 스프링 컨테이너라 한다.
+
+### 다양한 설정 형식 지원 - 자바 코드, XML
+
+- 스프링 컨테이너는 다양한 형식의 설정 정보를 받아드릴 수 있게 유연하게 설계되어 있다.
+ - 자바 코드, XML, Groovy 등등 (요즘엔 자바 코드를 주로 많이 씀)
+
+<img width="524" alt="스크린샷 2022-12-25 오전 11 37 54" src="https://user-images.githubusercontent.com/96857599/209455417-5c290586-d51e-418a-aced-545f9b176968.png">
+
+#### 애노테이션 기반 자바 코드 설정 사용
+- 지금까지 했던 것이다.
+- new AnnotationConfigApplicationContext(AppConfig.class) 
+- AnnotationConfigApplicationContext 클래스를 사용하면서 자바 코드로된 설정 정보를 넘기면 된다.
+
+
+#### XML 설정 사용
+- 최근에는 스프링 부트를 많이 사용하면서 XML기반의 설정은 잘 사용하지 않는다. 아직 많은 레거시
+프로젝트 들이 XML로 되어 있고, 또 XML을 사용하면 컴파일 없이 빈 설정 정보를 변경할 수 있는 장점도 있으므로 한번쯤 배워두는 것도 괜찮다.
+- GenericXmlApplicationContext를 사용하면서 xml 설정 파일을 넘기면 된다.
+
+<img width="1358" alt="스크린샷 2022-12-25 오전 11 52 45" src="https://user-images.githubusercontent.com/96857599/209455625-785a05c5-bca2-41bd-ab57-9fafde39fef1.png">
+
+<img width="1358" alt="스크린샷 2022-12-25 오전 11 53 10" src="https://user-images.githubusercontent.com/96857599/209455629-ea009a06-fb61-4dcc-b395-a6e61cbeb8ac.png">
+
+- xml 기반의 appConfig.xml 스프링 설정 정보와 자바 코드로 된 AppConfig.java 설정 정보를 비교해보면 거의 비슷하다는 것을 알 수 있다.
+- xml 기반으로 설정하는 것은 최근에 잘 사용하지 않으므로 이정도로 마무리 하고, 필요하면 스프링 공식 레퍼런스 문서를 확인하자.
+
