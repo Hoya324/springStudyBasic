@@ -583,3 +583,88 @@ ApplicationContext applicationContext =
 <img width="1375" alt="스크린샷 2022-12-24 오전 12 57 48" src="https://user-images.githubusercontent.com/96857599/209363926-80ded56a-5f93-425f-85be-75133d10da5f.png">
 
 <img width="1167" alt="스크린샷 2022-12-24 오전 1 08 09" src="https://user-images.githubusercontent.com/96857599/209365201-99b88d64-22dd-4ed7-a2a5-c179a328b3a3.png">
+
+### 스프링 빈 - 상속 관계
+
+- 부모 타입으로 조회하면, 자식 타입도 함께 조회한다.
+- 그래서 모든 자바 객체의 최고 부모인 Object 타입으로 조회하면, 모든 스프링 빈을 조회한다.
+
+
+<img width="692" alt="스크린샷 2022-12-25 오전 10 53 36" src="https://user-images.githubusercontent.com/96857599/209454880-4b2f7234-1ec3-4212-b256-a5394b51ee9b.png">
+
+
+- 부모 타입으로 조회할 경우, 자식(rateDiscountPolicy, fixDiscountPolicy)이 함께 조회되므로 중복 오류(NoUniqueBeanDefinitionException)가 발생한다.
+
+<img width="941" alt="스크린샷 2022-12-25 오전 11 02 20" src="https://user-images.githubusercontent.com/96857599/209455004-4d792f22-8f60-4061-82f9-868537c35a4f.png">
+
+- 해결방법은 빈 이름을 지정하면된다.
+
+<img width="1105" alt="스크린샷 2022-12-25 오전 11 11 38" src="https://user-images.githubusercontent.com/96857599/209455085-25f23449-35fc-44c4-bab7-d94d198d83dd.png">
+
+- 특정 하위 타입으로 조회할 수도 있지만, DIP에 위반된다.
+<img width="1105" alt="스크린샷 2022-12-25 오전 11 12 26" src="https://user-images.githubusercontent.com/96857599/209455090-8d7bc94a-3468-4831-8cf0-661a96b3408d.png">
+
+- 부모 타입으로 모두 조회하기, 연습이기 때문에 출력하여 확인한 것이다.
+
+<img width="1129" alt="스크린샷 2022-12-25 오전 11 19 51" src="https://user-images.githubusercontent.com/96857599/209455157-785b1fd0-9dfe-4070-bef3-33f6f97aa183.png">
+
+
+- 부모 타입으로 모두 조회하기 - Object
+
+<img width="1129" alt="스크린샷 2022-12-25 오전 11 23 31" src="https://user-images.githubusercontent.com/96857599/209455215-33fb5207-49f0-4e21-8af6-adf1ab558359.png">
+
+### BeanFactory와 ApplicationContext
+
+<img width="523" alt="스크린샷 2022-12-25 오전 11 26 53" src="https://user-images.githubusercontent.com/96857599/209455261-65382573-d3d6-4d74-8458-7d967ea8b79d.png">
+
+#### BeanFactory
+- 스프링 컨테이너의 최상위 인터페이스다.
+- 스프링 빈을 관리하고 조회하는 역할을 담당한다.
+- getBean()을 제공한다.
+- 지금까지 우리가 사용했던 대부분의 기능은 BeanFactory가 제공하는 기능이다.
+
+#### ApplicationContext
+- BeanFactory 기능을 모두 상속받아서 제공한다.
+- 빈을 관리하고 검색하는 기능을 BeanFactory가 제공해주는데, 그러면 둘의 차이가 뭘까?
+- 애플리케이션을 개발할 때는 빈을 관리하고 조회하는 기능은 물론이고, 수 많은 부가기능이 필요하다.
+
+** TIP💡 cmd + O를 누르면 외부 라이브러리까지 볼 수 있음.
+
+<img width="1129" alt="스크린샷 2022-12-25 오전 11 30 41" src="https://user-images.githubusercontent.com/96857599/209455325-2d4a27f5-c14a-4289-b3f6-6bf3c08bed89.png">
+cmd + B
+<img width="1129" alt="스크린샷 2022-12-25 오전 11 32 19" src="https://user-images.githubusercontent.com/96857599/209455356-43e4ec6c-ed7d-4385-be59-7c239945a935.png">
+
+<img width="691" alt="스크린샷 2022-12-25 오전 11 33 48" src="https://user-images.githubusercontent.com/96857599/209455375-582f3e11-740f-487f-947f-9f78c7650dcc.png">
+
+
+#### 정리
+- ApplicationContext는 BeanFactory의 기능을 상속받는다.
+- ApplicationContext는 빈 관리기능 + 편리한 부가 기능을 제공한다.
+- BeanFactory를 직접 사용할 일은 거의 없다. 부가기능이 포함된 ApplicationContext를 사용한다. 
+- BeanFactory나 ApplicationContext를 스프링 컨테이너라 한다.
+
+### 다양한 설정 형식 지원 - 자바 코드, XML
+
+- 스프링 컨테이너는 다양한 형식의 설정 정보를 받아드릴 수 있게 유연하게 설계되어 있다.
+ - 자바 코드, XML, Groovy 등등 (요즘엔 자바 코드를 주로 많이 씀)
+
+<img width="524" alt="스크린샷 2022-12-25 오전 11 37 54" src="https://user-images.githubusercontent.com/96857599/209455417-5c290586-d51e-418a-aced-545f9b176968.png">
+
+#### 애노테이션 기반 자바 코드 설정 사용
+- 지금까지 했던 것이다.
+- new AnnotationConfigApplicationContext(AppConfig.class) 
+- AnnotationConfigApplicationContext 클래스를 사용하면서 자바 코드로된 설정 정보를 넘기면 된다.
+
+
+#### XML 설정 사용
+- 최근에는 스프링 부트를 많이 사용하면서 XML기반의 설정은 잘 사용하지 않는다. 아직 많은 레거시
+프로젝트 들이 XML로 되어 있고, 또 XML을 사용하면 컴파일 없이 빈 설정 정보를 변경할 수 있는 장점도 있으므로 한번쯤 배워두는 것도 괜찮다.
+- GenericXmlApplicationContext를 사용하면서 xml 설정 파일을 넘기면 된다.
+
+<img width="1358" alt="스크린샷 2022-12-25 오전 11 52 45" src="https://user-images.githubusercontent.com/96857599/209455625-785a05c5-bca2-41bd-ab57-9fafde39fef1.png">
+
+<img width="1358" alt="스크린샷 2022-12-25 오전 11 53 10" src="https://user-images.githubusercontent.com/96857599/209455629-ea009a06-fb61-4dcc-b395-a6e61cbeb8ac.png">
+
+- xml 기반의 appConfig.xml 스프링 설정 정보와 자바 코드로 된 AppConfig.java 설정 정보를 비교해보면 거의 비슷하다는 것을 알 수 있다.
+- xml 기반으로 설정하는 것은 최근에 잘 사용하지 않으므로 이정도로 마무리 하고, 필요하면 스프링 공식 레퍼런스 문서를 확인하자.
+
