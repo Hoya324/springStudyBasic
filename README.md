@@ -706,3 +706,147 @@ cmd + B
 - BeanDefinition을 직접 생성해서 스프링 컨테이너에 등록할 수 도 있다. 하지만 실무에서 BeanDefinition을 직접 정의하거나 사용할 일은 거의 없다.
 - BeanDefinition에 대해서는 너무 깊이있게 이해하기 보다는, 스프링이 다양한 형태의 설정 정보를 BeanDefinition으로 추상화해서 사용하는 것 정도만 이해하면 된다.
 - 가끔 스프링 코드나 스프링 관련 오픈 소스의 코드를 볼 때, BeanDefinition 이라는 것이 보일 때가 있다. 이때 이러한 메커니즘을 떠올리면 된다.
+
+
+### 싱글톤 컨테이너 - 웹 애플리케이션과 싱글톤
+
+- 웹 애플리케이션은 고객의 끊임 없는 요청이 발생한다.
+<img width="689" alt="스크린샷 2022-12-30 오후 1 09 30" src="https://user-images.githubusercontent.com/96857599/210033606-ecce1bc6-d81b-41dd-b5d6-72b552d74dc2.png">
+
+- 요청할 때마다 다른 객체가 생성됨.
+<img width="1001" alt="스크린샷 2022-12-30 오후 1 15 28" src="https://user-images.githubusercontent.com/96857599/210033904-98a378ff-d0fe-4da7-b2df-ff7fc2634982.png">
+<img width="1001" alt="스크린샷 2022-12-30 오후 1 18 19" src="https://user-images.githubusercontent.com/96857599/210034051-fb30c304-0fe9-4ec2-a3e5-f47c552af536.png">
+
+- 우리가 만들었던 스프링 없는 순수한 DI 컨테이너인 AppConfig는 요청을 할 때 마다 객체를 새로 생성한다.
+- 고객 트래픽이 초당 100이 나오면 초당 100개 객체가 생성되고 소멸된다! -> 메모리 낭비가 심하다.
+- 해결방안은 해당 객체가 딱 1개만 생성되고, 공유하도록 설계하면 된다. -> 싱글톤 패턴
+
+
+### 싱글톤 패턴
+- 클래스의 인스턴스가 딱 1개만 생성되는 것을 보장하는 디자인 패턴이다.
+- 그래서 객체 인스턴스를 2개 이상 생성하지 못하도록 막아야 한다.
+- private 생성자를 사용해서 외부에서 임의로 new 키워드를 사용하지 못하도록 막아야 한다.
+<img width="1426" alt="스크린샷 2022-12-30 오후 1 33 35" src="https://user-images.githubusercontent.com/96857599/210034791-c1104bc2-7d1c-4dc8-99fb-9f68cedb778b.png">
+
+
+- new로 인한 객체 인스턴스 생성 막음
+<img width="1115" alt="스크린샷 2022-12-30 오후 1 39 01" src="https://user-images.githubusercontent.com/96857599/210035071-d9c5e837-3329-4665-b707-b5fd5b69cec5.png">
+
+- 같은 인스턴스를 사용하는 것을 알 수 있음
+<img width="1006" alt="스크린샷 2022-12-30 오후 1 43 34" src="https://user-images.githubusercontent.com/96857599/210035308-04f59f68-1c17-4efd-a2f7-e0e2bfd24ac7.png">
+
+> 참고: 싱글톤 패턴을 구현하는 방법은 여러가지가 있다. 여기서는 객체를 미리 생성해두는 가장 단순하고 안전한 방법을 선택했다.
+
+#### 싱글톤 패턴 문제점
+- 싱글톤 패턴을 구현하는 코드 자체가 많이 들어간다.
+- 의존관계상 클라이언트가 구체 클래스에 의존한다. -> DIP를 위반한다.
+- 클라이언트가 구체 클래스에 의존해서 OCP 원칙을 위반할 가능성이 높다.
+- 테스트하기 어렵다.
+- 내부 속성을 변경하거나 초기화 하기 어렵다.
+- private 생성자로 자식 클래스를 만들기 어렵다.
+- 결론적으로 유연성이 떨어진다.
+- 안티패턴으로 불리기도 한다.
+
+
+### 싱글톤 컨테이너
+
+- 스프링 컨테이너는 싱글턴 패턴을 적용하지 않아도, 객체 인스턴스를 싱글톤으로 관리한다.
+ - 컨테이너는 객체를 하나만 생성해서 관리한다.
+- 스프링 컨테이너는 싱글톤 컨테이너 역할을 한다. 이렇게 싱글톤 객체를 생성하고 관리하는 기능을 싱글톤 레지스트리라 한다.
+- 스프링 컨테이너의 이런 기능 덕분에 싱글턴 패턴의 모든 단점을 해결하면서 객체를 싱글톤으로 유지할 수 있다.
+ - 싱글톤 패턴을 위한 지저분한 코드가 들어가지 않아도 된다.
+ - DIP, OCP, 테스트, private 생성자로 부터 자유롭게 싱글톤을 사용할 수 있다.
+ 
+- 스프링 컨테이너를 사용하는 테스트 코드
+<img width="1145" alt="스크린샷 2022-12-30 오후 2 23 05" src="https://user-images.githubusercontent.com/96857599/210037442-c7e6f63c-8385-4376-b76f-cfca9e3d5447.png">
+
+<img width="690" alt="스크린샷 2022-12-30 오후 2 24 11" src="https://user-images.githubusercontent.com/96857599/210037491-725d9f33-de6f-4740-b158-31084fd9ea70.png">
+
+## 싱글톤 방식의 주의점!!
+
+- 싱글톤 패턴이든, 스프링 같은 싱글톤 컨테이너를 사용하든, 객체 인스턴스를 하나만 생성해서 공유하는 싱글톤 방식은 여러 클라이언트가 하나의 같은 객체 인스턴스를 공유하기 때문에 싱글톤 객체는 상태를 유지(stateful)하게 설계하면 안된다.
+- 무상태(stateless)로 설계해야 한다!
+ - 특정 클라이언트에 의존적인 필드가 있으면 안된다.
+ - 특정 클라이언트가 값을 변경할 수 있는 필드가 있으면 안된다!
+ - 가급적 읽기만 가능해야 한다.
+ - 필드 대신에 자바에서 공유되지 않는, 지역변수, 파라미터, ThreadLocal 등을 사용해야 한다.
+- 스프링 빈의 필드에 공유 값을 설정하면 정말 큰 장애가 발생할 수 있다!!!
+
+<img width="1018" alt="스크린샷 2022-12-30 오후 2 45 33" src="https://user-images.githubusercontent.com/96857599/210038704-0071bb95-5605-4206-8734-c29a45e8e9f4.png">
+
+<img width="1443" alt="스크린샷 2022-12-30 오후 2 46 02" src="https://user-images.githubusercontent.com/96857599/210038729-4e5fc526-0514-4d3a-bde2-8443b14d7306.png">
+
+- 최대한 단순히 설명하기 위해, 실제 쓰레드는 사용하지 않았다.
+- ThreadA가 사용자A 코드를 호출하고 ThreadB가 사용자B 코드를 호출한다 가정하자.
+- StatefulService의 price 필드는 공유되는 필드인데, 특정 클라이언트가 값을 변경한다.
+- 사용자A의 주문금액은 10000원이 되어야 하는데, 20000원이라는 결과가 나왔다.
+- 실무에서 이런 경우를 종종 보는데, 이로인해 정말 해결하기 어려운 큰 문제들이 터진다.
+- 진짜 공유필드는 조심해야 한다! 스프링 빈은 항상 무상태(stateless)로 설계하자.
+
+해결코드
+<img width="1443" alt="스크린샷 2022-12-30 오후 2 50 15" src="https://user-images.githubusercontent.com/96857599/210038919-f6eab37f-f15e-4dee-adb8-c231eda753d8.png">
+<img width="1443" alt="스크린샷 2022-12-30 오후 2 50 50" src="https://user-images.githubusercontent.com/96857599/210038950-4242e097-a616-4d6c-a025-caf9dec63d45.png">
+
+### @Configuration과 싱글톤
+
+- @Configuration은 싱글톤을 위해 존재하는 것이다.
+
+<img width="1180" alt="스크린샷 2022-12-30 오후 3 11 04" src="https://user-images.githubusercontent.com/96857599/210040062-c9da2750-5fbb-4b8d-931f-95896dd9da7d.png">
+- AppConfig에서 memberService 빈을 만드는 코드를 보면 memberRepository()를 호출한다.
+ - 이 메서드를 호출하면 new MemoryMemberRepository()를 호출한다.
+- orderService 빈을 만드는 코드도 동일하게 memberRepository()를 호출한다. 
+- 이 메서드를 호출하면 new MemoryMemberRepository()를 호출한다.
+
+- 결과적으로 각각 다른 2개의 MemoryMemberRepository가 생성되면서 싱글톤이 깨지는 것 처럼 보인다. 스프링 컨테이너는 이 문제를 어떻게 해결할까?
+
+- 테스트 해보자.
+
+<img width="970" alt="스크린샷 2022-12-30 오후 3 16 26" src="https://user-images.githubusercontent.com/96857599/210040436-385c6046-2534-4980-bdb0-28b76ff6ab5d.png">
+<img width="970" alt="스크린샷 2022-12-30 오후 3 16 35" src="https://user-images.githubusercontent.com/96857599/210040443-f3eb92ce-fd5c-449e-9d15-8414932f2437.png">
+
+<img width="1375" alt="스크린샷 2022-12-30 오후 3 43 23" src="https://user-images.githubusercontent.com/96857599/210042196-85e4e015-3e93-47d7-a326-3263dd066755.png">
+
+- 확인해보면 memberRepository 인스턴스는 모두 같은 인스턴스가 공유되어 사용된다.
+- AppConfig의 자바 코드를 보면 분명히 각각 2번 new MemoryMemberRepository를 호출해서 다른 인스턴스가 생성되어야 하는데?
+- 어떻게 된 일일까? 혹시 두 번 호출이 안되는 것일까? 실험을 통해 알아보자.
+
+#### AppConfig 호출로그 남기기
+<img width="932" alt="스크린샷 2022-12-30 오후 3 48 23" src="https://user-images.githubusercontent.com/96857599/210042589-f3f3d8ed-35be-4896-ae8b-f114a3166b1e.png">
+- memberRepository가 3번 출력될 것이라는 예상과 다르게 1번만 출력되었다. 다음 강의에서 설명
+
+### @Configuration과 바이트코드 조작의 마법
+
+스프링 컨테이너는 싱글톤 레지스트리다. 따라서 스프링 빈이 싱글톤이 되도록 보장해주어야 한다. 그런데 스프링이 자바 코드까지 어떻게 하기는 어렵다. 저 자바 코드를 보면 분명 3번 호출되어야 하는 것이 맞다. 그래서 스프링은 클래스의 바이트코드를 조작하는 라이브러리를 사용한다.
+
+<img width="1116" alt="스크린샷 2022-12-30 오후 3 55 22" src="https://user-images.githubusercontent.com/96857599/210043031-1285ca72-c971-4fb2-a6cc-ee7ee7a7b5df.png">
+
+순수한 클래스라면 다음과 같이 출력되어야 한다. 
+class hello.core.AppConfig
+
+그런데 예상과는 다르게 클래스 명에 xxxCGLIB가 붙으면서 상당히 복잡해진 것을 볼 수 있다. 이것은 내가 만든 클래스가 아니라 스프링이 CGLIB라는 바이트코드 조작 라이브러리를 사용해서 AppConfig 클래스를 상속받은 임의의 다른 클래스를 만들고, 그 다른 클래스를 스프링 빈으로 등록한 것이다!
+
+<img width="690" alt="스크린샷 2022-12-30 오후 3 57 35" src="https://user-images.githubusercontent.com/96857599/210043181-7dc360b5-72aa-4db0-b0d6-031a31154680.png">
+
+```java
+@Bean
+public MemberRepository memberRepository() {
+    if (memoryMemberRepository가 이미 스프링 컨테이너에 등록되어 있으면?) { 
+        return 스프링 컨테이너에서 찾아서 반환;
+    } else { //스프링 컨테이너에 없으면
+        기존 로직을 호출해서 MemoryMemberRepository를 생성하고 스프링 컨테이너에 등록
+        return 반환
+    }
+}
+```
+
+- @Bean이 붙은 메서드마다 이미 스프링 빈이 존재하면 존재하는 빈을 반환하고, 스프링 빈이 없으면 생성해서 스프링 빈으로 등록하고 반환하는 코드가 동적으로 만들어진다.
+- 덕분에 싱글톤이 보장되는 것이다.
+
+> 참고 AppConfig@CGLIB는 AppConfig의 자식 타입이므로, AppConfig 타입으로 조회 할 수 있다.
+
+#### 정리
+- @Bean만 사용해도 스프링 빈으로 등록되지만, 싱글톤을 보장하지 않는다.
+- memberRepository()처럼 의존관계 주입이 필요해서 메서드를 직접 호출할 때 싱글톤을 보장하지
+않는다.
+- 크게 고민할 것이 없다. 스프링 설정 정보는 항상 @Configuration을 사용하자.
+
