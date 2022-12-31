@@ -5,7 +5,10 @@ import hello.springStudyBasic.discount.DiscountPolicy;
 import hello.springStudyBasic.member.Member;
 import hello.springStudyBasic.member.MemberRepository;
 import hello.springStudyBasic.member.MemoryMemberRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+@Component
 public class OrderServiceImpl implements OrderService{
 
     // 필요한 클래스를 불러올 때 private final로 불러오는 이유: 생성자 기반 DI (생성자 주입: Constructor Injection)
@@ -18,6 +21,7 @@ public class OrderServiceImpl implements OrderService{
     private final MemberRepository memberRepository;
     private final DiscountPolicy discountPolicy;
 
+    @Autowired
     public OrderServiceImpl(MemberRepository memberRepository, DiscountPolicy discountPolicy) {
         this.memberRepository = memberRepository;
         this.discountPolicy = discountPolicy;

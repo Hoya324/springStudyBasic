@@ -2,7 +2,9 @@ package hello.springStudyBasic.discount;
 
 import hello.springStudyBasic.member.Grade;
 import hello.springStudyBasic.member.Member;
+import org.springframework.stereotype.Component;
 
+@Component
 public class RateDiscountPolicy implements DiscountPolicy{
 
 
