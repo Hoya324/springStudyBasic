@@ -850,3 +850,158 @@ public MemberRepository memberRepository() {
 않는다.
 - 크게 고민할 것이 없다. 스프링 설정 정보는 항상 @Configuration을 사용하자.
 
+### 컴포넌트 스캔과 의존관계 자동 주입 시작하기
+
+- 스프링은 설정 정보가 없어도 자동으로 스프링 빈을 등록하는 컴포넌트 스캔이라는 기능을 제공한다.
+
+<img width="1038" alt="스크린샷 2022-12-31 오후 5 01 41" src="https://user-images.githubusercontent.com/96857599/210129932-9e741a81-8156-4b8e-910a-d3c4b48c51cc.png">
+- 컴포넌트 스캔을 사용하려면 먼저 @ComponentScan을 설정 정보에 붙여주면 된다.
+- 기존의 AppConfig와는 다르게 @Bean으로 등록한 클래스가 하나도 없다!
+
+> 참고: 컴포넌트 스캔을 사용하면 @Configuration이 붙은 설정 정보도 자동으로 등록되기 때문에, AppConfig, TestConfig 등 앞서 만들어두었던 설정 정보도 함께 등록되고, 실행되어 버린다. 그래서 excludeFilters 를 이용해서 설정정보는 컴포넌트 스캔 대상에서 제외했다. 보통 설정 정보를 컴포넌트 스캔 대상에서 제외하지는 않지만, 기존 예제 코드를 최대한 남기고 유지하기 위해서 이 방법을 선택했다.
+
+컴포넌트 스캔은 이름 그대로 @Component 애노테이션이 붙은 클래스를 스캔해서 스프링 빈으로 등록한다. @Component를 붙인다.
+
+<img width="1038" alt="스크린샷 2022-12-31 오후 5 05 38" src="https://user-images.githubusercontent.com/96857599/210130012-17ea19dc-2692-4d66-9def-398b7c8b810d.png">
+
+<img width="1038" alt="스크린샷 2022-12-31 오후 5 06 09" src="https://user-images.githubusercontent.com/96857599/210130025-e8b670e7-c859-47a9-81a5-b836f0f2deea.png">
+
+<img width="1038" alt="스크린샷 2022-12-31 오후 5 06 46" src="https://user-images.githubusercontent.com/96857599/210130041-1e8662c0-d956-4da6-b087-d0420d0991a5.png">
+
+- 의존관계를 주입하기 위한 방법 -> @Autowired를 붙이면 자동으로 의존관계를 주입해준다.
+
+<img width="1154" alt="스크린샷 2022-12-31 오후 5 11 22" src="https://user-images.githubusercontent.com/96857599/210130105-49bf6621-1e0a-447a-b52b-171b046658b4.png">
+<img width="1049" alt="스크린샷 2022-12-31 오후 5 13 00" src="https://user-images.githubusercontent.com/96857599/210130141-bd411476-796b-4a14-bbed-1ad8da0907ef.png">
+<img width="1201" alt="스크린샷 2022-12-31 오후 5 34 54" src="https://user-images.githubusercontent.com/96857599/210130617-b135bcd6-30e6-41eb-89f1-b661ccaeaba3.png">
+
+- @Autowired 를 사용하면 생성자에서 여러 의존관계도 한번에 주입받을 수 있다.
+
+<img width="1420" alt="스크린샷 2022-12-31 오후 5 26 29" src="https://user-images.githubusercontent.com/96857599/210130448-d2df5414-4f1a-4769-90a1-d2cecdc22ccd.png">
+
+- 로그를 잘 보면 컴포넌트 스캔이 잘 동작하는 것을 확인할 수 있다.
+<img width="1507" alt="스크린샷 2022-12-31 오후 5 27 36" src="https://user-images.githubusercontent.com/96857599/210130472-7ca3b01e-8f20-4318-a47e-16a2a57ac26f.png">
+
+<img width="842" alt="스크린샷 2022-12-31 오후 5 29 22" src="https://user-images.githubusercontent.com/96857599/210130522-d0740f0e-facd-420a-a501-ddc9a1996391.png">
+
+- @ComponentScan 은 @Component 가 붙은 모든 클래스를 스프링 빈으로 등록한다.
+- 이때 스프링 빈의 기본 이름은 클래스명을 사용하되 맨 앞글자만 소문자를 사용한다.
+ - 빈 이름 기본 전략: MemberServiceImpl클래스 -> memberServiceImpl
+ - 빈 이름 직접 지정: 만약 스프링 빈의 이름을 직접 지정하고 싶으면 @Component("memberService2") 이런식으로 이름을 부여하면 된다.
+ 
+<img width="843" alt="스크린샷 2022-12-31 오후 5 31 04" src="https://user-images.githubusercontent.com/96857599/210130543-9783baf9-2286-4bbd-bbc8-767838a28143.png">
+
+- 생성자에 @Autowired 를 지정하면, 스프링 컨테이너가 자동으로 해당 스프링 빈을 찾아서 주입한다.
+- 이때 기본 조회 전략은 타입이 같은 빈을 찾아서 주입한다.
+ - getBean(MemberRepository.class) 와 동일하다고 이해하면 된다. (더 자세한 내용은 뒤에서 설명한다.)
+ 
+#### 정리
+- @Component가 붙은 클래스 들이 스프링 컨테이너에 저장된다.
+- @Autowired를 통해 의존성을 주입해준다.
+
+### 탐색 위치와 스캔 대상
+
+<img width="1248" alt="스크린샷 2022-12-31 오후 8 34 18" src="https://user-images.githubusercontent.com/96857599/210135194-692d8533-a28e-431a-ab8c-62dbac651183.png">
+
+- basePackages : 탐색할 패키지의 시작 위치를 지정한다. 이 패키지를 포함해서 하위 패키지를 모두 탐색한다.
+ - basePackages = {"hello.core", "hello.service"} 이렇게 여러 시작 위치를 지정할 수도 있다.
+- basePackageClasses : 지정한 클래스의 패키지를 탐색 시작 위치로 지정한다.
+- 만약 지정하지 않으면 @ComponentScan이 붙은 설정 정보 클래스의 패키지가 시작 위치가 된다.
+
+#### 권장하는 방법
+개인적으로 즐겨 사용하는 방법은 패키지 위치를 지정하지 않고, 설정 정보 클래스의 위치를 프로젝트 최상단에 두는 것이다. 최근 스프링 부트도 이 방법을 기본으로 제공한다.
+
+예를 들어서 프로젝트가 다음과 같이 구조가 되어 있으면
+- com.hello
+- com.hello.serivce
+- com.hello.repository
+- com.hello 프로젝트 시작 루트, 여기에 AppConfig 같은 메인 설정 정보를 두고, @ComponentScan 애노테이션을 붙이고, basePackages 지정은 생략한다.
+
+이렇게 하면 com.hello 를 포함한 하위는 모두 자동으로 컴포넌트 스캔의 대상이 된다. 그리고 프로젝트 메인 설정 정보는 프로젝트를 대표하는 정보이기 때문에 프로젝트 시작 루트 위치에 두는 것이 좋다 생각한다.
+
+> 참고로 스프링 부트를 사용하면 스프링 부트의 대표 시작 정보인 @SpringBootApplication를 이 프로젝트 시작 루트 위치에 두는 것이 관례이다. (그리고 이 설정안에 바로 @ComponentScan이 들어있다.)
+
+#### 컴포넌트 스캔 기본 대상
+컴포넌트 스캔은 @Component 뿐만 아니라 다음과 내용도 추가로 대상에 포함한다. (모두 @Component를 포함한다.)
+- @Component : 컴포넌트 스캔에서 사용
+- @Controlller : 스프링 MVC 컨트롤러에서 사용
+- @Service : 스프링 비즈니스 로직에서 사용
+- @Repository : 스프링 데이터 접근 계층에서 사용
+- @Configuration : 스프링 설정 정보에서 사용
+
+> 참고: 사실 어노테이션에는 상속관계라는 것이 없다. 그래서 이렇게 어노테이션이 특정 어노테이션을 들고 있는 것을 인식할 수 있는 것은 자바 언어가 지원하는 기능은 아니고, 스프링이 지원하는 기능이다.
+
+컴포넌트 스캔의 용도 뿐만 아니라 다음 애노테이션이 있으면 스프링은 부가 기능을 수행한다.
+- @Controller : 스프링 MVC 컨트롤러로 인식
+- @Repository : 스프링 데이터 접근 계층으로 인식하고, 데이터 계층의 예외를 스프링 예외로 변환해준다. (데이터 베이스에 따른 예외를 서비스 계층까지 가지 않도록 한다.)
+- @Configuration : 앞서 보았듯이 스프링 설정 정보로 인식하고, 스프링 빈이 싱글톤을 유지하도록 추가
+처리를 한다.
+- @Service : 사실 @Service는 특별한 처리를 하지 않는다. 대신 개발자들이 핵심 비즈니스 로직이 여기에
+있겠구나 라고 비즈니스 계층을 인식하는데 도움이 된다.
+
+> 참고: useDefaultFilters 옵션은 기본으로 켜져있는데, 이 옵션을 끄면 기본 스캔 대상들이 제외된다.
+
+### 필터
+
+- includeFilters : 컴포넌트 스캔 대상을 추가로 지정한다. 
+- excludeFilters : 컴포넌트 스캔에서 제외할 대상을 지정한다.
+
+- MyIncludeComponent와 MyExcludeComponent 어노테이션을 생성한다.
+
+<img width="1214" alt="스크린샷 2022-12-31 오후 9 05 21" src="https://user-images.githubusercontent.com/96857599/210136140-04c59334-6c6c-4066-acc9-39b7766c9608.png">
+
+<img width="1214" alt="스크린샷 2022-12-31 오후 9 05 34" src="https://user-images.githubusercontent.com/96857599/210136142-432669a6-b048-4a85-b184-28308a268b3c.png">
+- MyIncludeComponent 어노테이션을 갖는 BeanA를 생성한다.
+<img width="1214" alt="스크린샷 2022-12-31 오후 9 06 29" src="https://user-images.githubusercontent.com/96857599/210136159-f4f6da67-55a0-4801-8b9f-100dc9ffe5fc.png">
+- MyExcludeComponent 어노테이션을 갖는 BeanB를 생성한다.
+<img width="1214" alt="스크린샷 2022-12-31 오후 9 07 55" src="https://user-images.githubusercontent.com/96857599/210136193-e8978c09-98d3-434f-8396-3d752684ce8a.png">
+- includeFilters에 MyIncludeComponent 어노테이션을 추가해서 BeanA가 스프링 빈에 등록된다. excludeFilters에 MyExcludeComponent 어노테이션을 추가해서 BeanB는 스프링 빈에 등록되지 않는다.
+
+<img width="1483" alt="스크린샷 2022-12-31 오후 9 08 27" src="https://user-images.githubusercontent.com/96857599/210136209-ea077854-f307-42cc-a661-ab1b10b73527.png">
+
+#### FilterType 옵션
+FilterType은 5가지 옵션이 있다.
+- ANNOTATION: 기본값, 애노테이션을 인식해서 동작한다. ex) org.example.SomeAnnotation
+- ASSIGNABLE_TYPE: 지정한 타입과 자식 타입을 인식해서 동작한다. ex) org.example.SomeClass
+- ASPECTJ: AspectJ 패턴 사용 ex) org.example..*Service+
+- REGEX: 정규 표현식 ex) org\.example\.Default.*
+- CUSTOM: TypeFilter 이라는 인터페이스를 구현해서 처리 ex) org.example.MyTypeFilter
+
+> 참고: @Component 면 충분하기 때문에, includeFilters를 사용할 일은 거의 없다. excludeFilters는 여러가지 이유로 간혹 사용할 때가 있지만 많지는 않다. 특히 최근 스프링 부트는 컴포넌트 스캔을 기본으로 제공하는데, 개인적으로는 옵션을 변경하면서 사용하기 보다는 스프링의 기본 설정에 최대한 맞추어 사용하는 것을 권장하고, 선호하는 편이다.
+
+### 중복 등록과 충돌
+
+1. 자동빈등록vs자동빈등록
+
+컴포넌트 스캔에 의해 자동으로 스프링 빈이 등록되는데, 그 이름이 같은 경우 스프링은 오류를 발생시킨다.
+ - ConflictingBeanDefinitionException 예외 발생
+
+2. 수동빈등록vs자동빈등록
+- AutoAppConfig에 memoryMemberRepository라는 이름으로 bean 등록을 해준다.
+<img width="1239" alt="스크린샷 2022-12-31 오후 9 42 44" src="https://user-images.githubusercontent.com/96857599/210137098-357fd803-fd40-4863-b930-fc0462cf6302.png">
+
+<img width="1239" alt="스크린샷 2022-12-31 오후 9 43 49" src="https://user-images.githubusercontent.com/96857599/210137132-c107e28d-6fa9-43ef-8dfd-1053be27abf2.png">
+
+- 둘의 이름이 같아서 오류가 생겨야하지만 생기지 않았다.
+<img width="1239" alt="스크린샷 2022-12-31 오후 9 44 33" src="https://user-images.githubusercontent.com/96857599/210137153-754c00f3-439d-4e6b-9a5b-6c6b0080e73c.png">
+
+- 이유는 이런 경우에 수동 빈 등록이 우서권을 가진다. (수동 빈이 자동 빈을 오버라이딩 해버린다.)
+- 해당 로그를 통해 알 수 있다.
+
+<img width="1052" alt="스크린샷 2022-12-31 오후 9 46 58" src="https://user-images.githubusercontent.com/96857599/210137210-a13e28b9-cff0-46b6-bc62-614919e3d17b.png">
+
+> 물론 개발자가 의도적으로 이런 결과를 기대했다면, 자동 보다는 수동이 우선권을 가지는 것이 좋다. 하지만 현실은 개발자가 의도적으로 설정해서 이런 결과가 만들어지기 보다는 여러 설정들이 꼬여서 이런 결과가 만들어지는 경우가 대부분이다! 그러면 정말 잡기 어려운 버그가 만들어진다. 항상 잡기 어려운 버그는 애매한 버그다.
+> 그래서 최근 스프링 부트에서는 수동 빈 등록과 자동 빈 등록이 충돌나면 오류가 발생하도록 기본 값을 바꾸었다.
+
+- 스프링부트 실행시
+<img width="1469" alt="스크린샷 2022-12-31 오후 9 49 40" src="https://user-images.githubusercontent.com/96857599/210137281-b5c3aeb7-66f8-4f16-9b9a-ce1174a34076.png">
+
+```
+Description:
+
+The bean 'memoryMemberRepository', defined in class path resource [hello/springStudyBasic/AutoAppConfig.class], could not be registered. A bean with that name has already been defined in file [/Users/gangho/Desktop/springStudyBasic/out/production/classes/hello/springStudyBasic/member/MemoryMemberRepository.class] and overriding is disabled.
+
+Action:
+
+Consider renaming one of the beans or enabling overriding by setting spring.main.allow-bean-definition-overriding=true
+```
+> 코드를 더 써야할지라도, 명확하고 확실하게 작성하는게 좋다. -> 그렇지 않으면 더 큰 버그가 발생한다!
