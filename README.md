@@ -970,9 +970,38 @@ FilterType은 5가지 옵션이 있다.
 
 ### 중복 등록과 충돌
 
+1. 자동빈등록vs자동빈등록
 
+컴포넌트 스캔에 의해 자동으로 스프링 빈이 등록되는데, 그 이름이 같은 경우 스프링은 오류를 발생시킨다.
+ - ConflictingBeanDefinitionException 예외 발생
 
+2. 수동빈등록vs자동빈등록
+- AutoAppConfig에 memoryMemberRepository라는 이름으로 bean 등록을 해준다.
+<img width="1239" alt="스크린샷 2022-12-31 오후 9 42 44" src="https://user-images.githubusercontent.com/96857599/210137098-357fd803-fd40-4863-b930-fc0462cf6302.png">
 
+<img width="1239" alt="스크린샷 2022-12-31 오후 9 43 49" src="https://user-images.githubusercontent.com/96857599/210137132-c107e28d-6fa9-43ef-8dfd-1053be27abf2.png">
 
+- 둘의 이름이 같아서 오류가 생겨야하지만 생기지 않았다.
+<img width="1239" alt="스크린샷 2022-12-31 오후 9 44 33" src="https://user-images.githubusercontent.com/96857599/210137153-754c00f3-439d-4e6b-9a5b-6c6b0080e73c.png">
 
+- 이유는 이런 경우에 수동 빈 등록이 우서권을 가진다. (수동 빈이 자동 빈을 오버라이딩 해버린다.)
+- 해당 로그를 통해 알 수 있다.
 
+<img width="1052" alt="스크린샷 2022-12-31 오후 9 46 58" src="https://user-images.githubusercontent.com/96857599/210137210-a13e28b9-cff0-46b6-bc62-614919e3d17b.png">
+
+> 물론 개발자가 의도적으로 이런 결과를 기대했다면, 자동 보다는 수동이 우선권을 가지는 것이 좋다. 하지만 현실은 개발자가 의도적으로 설정해서 이런 결과가 만들어지기 보다는 여러 설정들이 꼬여서 이런 결과가 만들어지는 경우가 대부분이다! 그러면 정말 잡기 어려운 버그가 만들어진다. 항상 잡기 어려운 버그는 애매한 버그다.
+> 그래서 최근 스프링 부트에서는 수동 빈 등록과 자동 빈 등록이 충돌나면 오류가 발생하도록 기본 값을 바꾸었다.
+
+- 스프링부트 실행시
+<img width="1469" alt="스크린샷 2022-12-31 오후 9 49 40" src="https://user-images.githubusercontent.com/96857599/210137281-b5c3aeb7-66f8-4f16-9b9a-ce1174a34076.png">
+
+```
+Description:
+
+The bean 'memoryMemberRepository', defined in class path resource [hello/springStudyBasic/AutoAppConfig.class], could not be registered. A bean with that name has already been defined in file [/Users/gangho/Desktop/springStudyBasic/out/production/classes/hello/springStudyBasic/member/MemoryMemberRepository.class] and overriding is disabled.
+
+Action:
+
+Consider renaming one of the beans or enabling overriding by setting spring.main.allow-bean-definition-overriding=true
+```
+> 코드를 더 써야할지라도, 명확하고 확실하게 작성하는게 좋다. -> 그렇지 않으면 더 큰 버그가 발생한다!
