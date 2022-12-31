@@ -850,3 +850,52 @@ public MemberRepository memberRepository() {
 않는다.
 - 크게 고민할 것이 없다. 스프링 설정 정보는 항상 @Configuration을 사용하자.
 
+### 컴포넌트 스캔과 의존관계 자동 주입 시작하기
+
+- 스프링은 설정 정보가 없어도 자동으로 스프링 빈을 등록하는 컴포넌트 스캔이라는 기능을 제공한다.
+
+<img width="1038" alt="스크린샷 2022-12-31 오후 5 01 41" src="https://user-images.githubusercontent.com/96857599/210129932-9e741a81-8156-4b8e-910a-d3c4b48c51cc.png">
+- 컴포넌트 스캔을 사용하려면 먼저 @ComponentScan을 설정 정보에 붙여주면 된다.
+- 기존의 AppConfig와는 다르게 @Bean으로 등록한 클래스가 하나도 없다!
+
+> 참고: 컴포넌트 스캔을 사용하면 @Configuration이 붙은 설정 정보도 자동으로 등록되기 때문에, AppConfig, TestConfig 등 앞서 만들어두었던 설정 정보도 함께 등록되고, 실행되어 버린다. 그래서 excludeFilters 를 이용해서 설정정보는 컴포넌트 스캔 대상에서 제외했다. 보통 설정 정보를 컴포넌트 스캔 대상에서 제외하지는 않지만, 기존 예제 코드를 최대한 남기고 유지하기 위해서 이 방법을 선택했다.
+
+컴포넌트 스캔은 이름 그대로 @Component 애노테이션이 붙은 클래스를 스캔해서 스프링 빈으로 등록한다. @Component를 붙인다.
+
+<img width="1038" alt="스크린샷 2022-12-31 오후 5 05 38" src="https://user-images.githubusercontent.com/96857599/210130012-17ea19dc-2692-4d66-9def-398b7c8b810d.png">
+
+<img width="1038" alt="스크린샷 2022-12-31 오후 5 06 09" src="https://user-images.githubusercontent.com/96857599/210130025-e8b670e7-c859-47a9-81a5-b836f0f2deea.png">
+
+<img width="1038" alt="스크린샷 2022-12-31 오후 5 06 46" src="https://user-images.githubusercontent.com/96857599/210130041-1e8662c0-d956-4da6-b087-d0420d0991a5.png">
+
+- 의존관계를 주입하기 위한 방법 -> @Autowired를 붙이면 자동으로 의존관계를 주입해준다.
+
+<img width="1154" alt="스크린샷 2022-12-31 오후 5 11 22" src="https://user-images.githubusercontent.com/96857599/210130105-49bf6621-1e0a-447a-b52b-171b046658b4.png">
+<img width="1049" alt="스크린샷 2022-12-31 오후 5 13 00" src="https://user-images.githubusercontent.com/96857599/210130141-bd411476-796b-4a14-bbed-1ad8da0907ef.png">
+<img width="1201" alt="스크린샷 2022-12-31 오후 5 34 54" src="https://user-images.githubusercontent.com/96857599/210130617-b135bcd6-30e6-41eb-89f1-b661ccaeaba3.png">
+
+- @Autowired 를 사용하면 생성자에서 여러 의존관계도 한번에 주입받을 수 있다.
+
+<img width="1420" alt="스크린샷 2022-12-31 오후 5 26 29" src="https://user-images.githubusercontent.com/96857599/210130448-d2df5414-4f1a-4769-90a1-d2cecdc22ccd.png">
+
+- 로그를 잘 보면 컴포넌트 스캔이 잘 동작하는 것을 확인할 수 있다.
+<img width="1507" alt="스크린샷 2022-12-31 오후 5 27 36" src="https://user-images.githubusercontent.com/96857599/210130472-7ca3b01e-8f20-4318-a47e-16a2a57ac26f.png">
+
+<img width="842" alt="스크린샷 2022-12-31 오후 5 29 22" src="https://user-images.githubusercontent.com/96857599/210130522-d0740f0e-facd-420a-a501-ddc9a1996391.png">
+
+- @ComponentScan 은 @Component 가 붙은 모든 클래스를 스프링 빈으로 등록한다.
+- 이때 스프링 빈의 기본 이름은 클래스명을 사용하되 맨 앞글자만 소문자를 사용한다.
+ - 빈 이름 기본 전략: MemberServiceImpl클래스 -> memberServiceImpl
+ - 빈 이름 직접 지정: 만약 스프링 빈의 이름을 직접 지정하고 싶으면 @Component("memberService2") 이런식으로 이름을 부여하면 된다.
+ 
+<img width="843" alt="스크린샷 2022-12-31 오후 5 31 04" src="https://user-images.githubusercontent.com/96857599/210130543-9783baf9-2286-4bbd-bbc8-767838a28143.png">
+
+- 생성자에 @Autowired 를 지정하면, 스프링 컨테이너가 자동으로 해당 스프링 빈을 찾아서 주입한다.
+- 이때 기본 조회 전략은 타입이 같은 빈을 찾아서 주입한다.
+ - getBean(MemberRepository.class) 와 동일하다고 이해하면 된다. (더 자세한 내용은 뒤에서 설명한다.)
+ 
+#### 정리
+- @Component가 붙은 클래스 들이 스프링 컨테이너에 저장된다.
+- @Autowired를 통해 의존성을 주입해준다.
+- 
+ 
