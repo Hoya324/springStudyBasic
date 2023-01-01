@@ -44,8 +44,8 @@
  
 - 한 클래스는 하나의 책임만 가져야 한다. 
 - 하나의 책임이라는 것은 모호하다.
- - 클 수 있고, 작을 수 있다.
- - 문맥과 상황에 따라 다르다.
+ 	- 클 수 있고, 작을 수 있다.
+ 	- 문맥과 상황에 따라 다르다.
 - 중요한 기준은 변경이다. 변경이 있을 때 파급 효과가 적으면 단일 책임 원칙을 잘 따른 것 
 - 예) UI 변경, 객체의 생성과 사용을 분리
 
@@ -60,8 +60,8 @@
 
 #### OCP 개방-폐쇄 원칙 문제점
 - MemberService 클라이언트가 구현 클래스를 직접 선택
- - MemberRepository m = new MemoryMemberRepository(); //기존 코드
- - MemberRepository m = new JdbcMemberRepository(); //변경 코드 
+ 	- MemberRepository m = new MemoryMemberRepository(); //기존 코드
+ 	- MemberRepository m = new JdbcMemberRepository(); //변경 코드 
 - 구현 객체를 변경하려면 클라이언트 코드를 변경해야 한다.
 - 분명 다형성을 사용했지만 OCP 원칙을 지킬 수 없다.
 - 이 문제를 어떻게 해결해야 하나?
@@ -105,8 +105,8 @@
 ### 객체 지향 설계와 스프링
 
 - 스프링은 다음 기술로 다형성 + OCP,DIP를 가능하게 지원
- - DI(Dependency Injection): 의존관계, 의존성 주입
- - DI 컨테이너 제공
+	- DI(Dependency Injection): 의존관계, 의존성 주입
+ 	- DI 컨테이너 제공
 - 클라이언트 코드의 변경 없이 기능 확장 
 - 쉽게 부품을 교체하듯이 개발
 
@@ -503,8 +503,8 @@ ApplicationContext applicationContext =
 - 직전에 AppConfig 를 사용했던 방식이 애노테이션 기반의 자바 설정 클래스로 스프링 컨테이너를 만든
 것이다.
 - 자바 설정 클래스를 기반으로 스프링 컨테이너( ApplicationContext )를 만들어보자.
-  - new AnnotationConfigApplicationContext(AppConfig.class);
-  - 이 클래스는 ApplicationContext 인터페이스의 구현체이다.
+	- new AnnotationConfigApplicationContext(AppConfig.class);
+  	- 이 클래스는 ApplicationContext 인터페이스의 구현체이다.
   
   
 > 참고: 더 정확히는 스프링 컨테이너를 부를 때 BeanFactory, ApplicationContext로 구분해서 이야기한다. 이 부분은 뒤에서 설명하겠다. BeanFactory를 직접 사용하는 경우는 거의 없으므로 일반적으로 ApplicationContext를 스프링 컨테이너라 한다.
@@ -646,7 +646,7 @@ cmd + B
 ### 다양한 설정 형식 지원 - 자바 코드, XML
 
 - 스프링 컨테이너는 다양한 형식의 설정 정보를 받아드릴 수 있게 유연하게 설계되어 있다.
- - 자바 코드, XML, Groovy 등등 (요즘엔 자바 코드를 주로 많이 씀)
+ 	- 자바 코드, XML, Groovy 등등 (요즘엔 자바 코드를 주로 많이 씀)
 
 <img width="524" alt="스크린샷 2022-12-25 오전 11 37 54" src="https://user-images.githubusercontent.com/96857599/209455417-5c290586-d51e-418a-aced-545f9b176968.png">
 
@@ -674,11 +674,11 @@ cmd + B
  
 - 스프링은 어떻게 이런 다양한 설정 형식을 지원하는 것일까? 그 중심에는 BeanDefinition 이라는 추상화가 있다.
 - 쉽게 이야기해서 역할과 구현을 개념적으로 나눈 것이다!
- - XML을 읽어서 BeanDefinition을 만들면 된다.
- - 자바 코드를 읽어서 BeanDefinition을 만들면 된다.
- - 스프링 컨테이너는 자바 코드인지, XML인지 몰라도 된다. 오직 BeanDefinition만 알면 된다.
+	- XML을 읽어서 BeanDefinition을 만들면 된다.
+	- 자바 코드를 읽어서 BeanDefinition을 만들면 된다.
+	- 스프링 컨테이너는 자바 코드인지, XML인지 몰라도 된다. 오직 BeanDefinition만 알면 된다.
 - BeanDefinition을 빈 설정 메타정보라 한다.
- - @Bean , <bean> 당 각각 하나씩 메타 정보가 생성된다.
+ 	- @Bean , <bean> 당 각각 하나씩 메타 정보가 생성된다.
 - 스프링 컨테이너는 이 메타정보를 기반으로 스프링 빈을 생성한다.
  
  <img width="689" alt="스크린샷 2022-12-26 오후 4 49 13" src="https://user-images.githubusercontent.com/96857599/209520552-311c7e3f-091f-4be8-b9df-8c37cc69abee.png">
@@ -751,11 +751,11 @@ cmd + B
 ### 싱글톤 컨테이너
 
 - 스프링 컨테이너는 싱글턴 패턴을 적용하지 않아도, 객체 인스턴스를 싱글톤으로 관리한다.
- - 컨테이너는 객체를 하나만 생성해서 관리한다.
+ 	- 컨테이너는 객체를 하나만 생성해서 관리한다.
 - 스프링 컨테이너는 싱글톤 컨테이너 역할을 한다. 이렇게 싱글톤 객체를 생성하고 관리하는 기능을 싱글톤 레지스트리라 한다.
 - 스프링 컨테이너의 이런 기능 덕분에 싱글턴 패턴의 모든 단점을 해결하면서 객체를 싱글톤으로 유지할 수 있다.
- - 싱글톤 패턴을 위한 지저분한 코드가 들어가지 않아도 된다.
- - DIP, OCP, 테스트, private 생성자로 부터 자유롭게 싱글톤을 사용할 수 있다.
+	- 싱글톤 패턴을 위한 지저분한 코드가 들어가지 않아도 된다.
+	- DIP, OCP, 테스트, private 생성자로 부터 자유롭게 싱글톤을 사용할 수 있다.
  
 - 스프링 컨테이너를 사용하는 테스트 코드
 <img width="1145" alt="스크린샷 2022-12-30 오후 2 23 05" src="https://user-images.githubusercontent.com/96857599/210037442-c7e6f63c-8385-4376-b76f-cfca9e3d5447.png">
@@ -766,11 +766,11 @@ cmd + B
 
 - 싱글톤 패턴이든, 스프링 같은 싱글톤 컨테이너를 사용하든, 객체 인스턴스를 하나만 생성해서 공유하는 싱글톤 방식은 여러 클라이언트가 하나의 같은 객체 인스턴스를 공유하기 때문에 싱글톤 객체는 상태를 유지(stateful)하게 설계하면 안된다.
 - 무상태(stateless)로 설계해야 한다!
- - 특정 클라이언트에 의존적인 필드가 있으면 안된다.
- - 특정 클라이언트가 값을 변경할 수 있는 필드가 있으면 안된다!
- - 가급적 읽기만 가능해야 한다.
- - 필드 대신에 자바에서 공유되지 않는, 지역변수, 파라미터, ThreadLocal 등을 사용해야 한다.
-- 스프링 빈의 필드에 공유 값을 설정하면 정말 큰 장애가 발생할 수 있다!!!
+	- 특정 클라이언트에 의존적인 필드가 있으면 안된다.
+	- 특정 클라이언트가 값을 변경할 수 있는 필드가 있으면 안된다!
+	- 가급적 읽기만 가능해야 한다.
+ 	- 필드 대신에 자바에서 공유되지 않는, 지역변수, 파라미터, ThreadLocal 등을 사용해야 한다.
+	- 스프링 빈의 필드에 공유 값을 설정하면 정말 큰 장애가 발생할 수 있다!!!
 
 <img width="1018" alt="스크린샷 2022-12-30 오후 2 45 33" src="https://user-images.githubusercontent.com/96857599/210038704-0071bb95-5605-4206-8734-c29a45e8e9f4.png">
 
@@ -793,7 +793,7 @@ cmd + B
 
 <img width="1180" alt="스크린샷 2022-12-30 오후 3 11 04" src="https://user-images.githubusercontent.com/96857599/210040062-c9da2750-5fbb-4b8d-931f-95896dd9da7d.png">
 - AppConfig에서 memberService 빈을 만드는 코드를 보면 memberRepository()를 호출한다.
- - 이 메서드를 호출하면 new MemoryMemberRepository()를 호출한다.
+	- 이 메서드를 호출하면 new MemoryMemberRepository()를 호출한다.
 - orderService 빈을 만드는 코드도 동일하게 memberRepository()를 호출한다. 
 - 이 메서드를 호출하면 new MemoryMemberRepository()를 호출한다.
 
@@ -885,14 +885,14 @@ public MemberRepository memberRepository() {
 
 - @ComponentScan 은 @Component 가 붙은 모든 클래스를 스프링 빈으로 등록한다.
 - 이때 스프링 빈의 기본 이름은 클래스명을 사용하되 맨 앞글자만 소문자를 사용한다.
- - 빈 이름 기본 전략: MemberServiceImpl클래스 -> memberServiceImpl
- - 빈 이름 직접 지정: 만약 스프링 빈의 이름을 직접 지정하고 싶으면 @Component("memberService2") 이런식으로 이름을 부여하면 된다.
+	- 빈 이름 기본 전략: MemberServiceImpl클래스 -> memberServiceImpl
+	- 빈 이름 직접 지정: 만약 스프링 빈의 이름을 직접 지정하고 싶으면 @Component("memberService2") 이런식으로 이름을 부여하면 된다.
  
 <img width="843" alt="스크린샷 2022-12-31 오후 5 31 04" src="https://user-images.githubusercontent.com/96857599/210130543-9783baf9-2286-4bbd-bbc8-767838a28143.png">
 
 - 생성자에 @Autowired 를 지정하면, 스프링 컨테이너가 자동으로 해당 스프링 빈을 찾아서 주입한다.
 - 이때 기본 조회 전략은 타입이 같은 빈을 찾아서 주입한다.
- - getBean(MemberRepository.class) 와 동일하다고 이해하면 된다. (더 자세한 내용은 뒤에서 설명한다.)
+	- getBean(MemberRepository.class) 와 동일하다고 이해하면 된다. (더 자세한 내용은 뒤에서 설명한다.)
  
 #### 정리
 - @Component가 붙은 클래스 들이 스프링 컨테이너에 저장된다.
@@ -903,7 +903,7 @@ public MemberRepository memberRepository() {
 <img width="1248" alt="스크린샷 2022-12-31 오후 8 34 18" src="https://user-images.githubusercontent.com/96857599/210135194-692d8533-a28e-431a-ab8c-62dbac651183.png">
 
 - basePackages : 탐색할 패키지의 시작 위치를 지정한다. 이 패키지를 포함해서 하위 패키지를 모두 탐색한다.
- - basePackages = {"hello.core", "hello.service"} 이렇게 여러 시작 위치를 지정할 수도 있다.
+	- basePackages = {"hello.core", "hello.service"} 이렇게 여러 시작 위치를 지정할 수도 있다.
 - basePackageClasses : 지정한 클래스의 패키지를 탐색 시작 위치로 지정한다.
 - 만약 지정하지 않으면 @ComponentScan이 붙은 설정 정보 클래스의 패키지가 시작 위치가 된다.
 
@@ -1005,3 +1005,85 @@ Action:
 Consider renaming one of the beans or enabling overriding by setting spring.main.allow-bean-definition-overriding=true
 ```
 > 코드를 더 써야할지라도, 명확하고 확실하게 작성하는게 좋다. -> 그렇지 않으면 더 큰 버그가 발생한다!
+
+
+### 다양한 의존관계 주입 방법
+
+#### 생성자 주입
+
+- 이름 그대로 생성자를 통해서 의존 관계를 주입 받는 방법이다.
+- 특징
+	- 생성자 호출시점에 딱 1번만 호출되는 것이 보장된다.
+	- 불변, 필수 의존관계에 사용
+	
+	<img width="1018" alt="스크린샷 2023-01-01 오후 6 26 47" src="https://user-images.githubusercontent.com/96857599/210166244-d4b11c2e-6004-4cee-895a-eb679a5634d6.png">
+
+##### 중요! 생성자가 딱 1개만 있으면 @Autowired를 생략해도 자동 주입 된다. 물론 스프링 빈에만 해당한다.
+
+#### 수정자 주입
+
+- setter라 불리는 필드의 값을 변경하는 수정자 메서드를 통해서 의존관계를 주입하는 방법이다.
+- 특징
+	- 선택, 변경 가능성이 있는 의존관계에 사용 (스프링 빈에 등록된 것만 선택할 수 있다.)
+	- 자바빈 프로퍼티 규약의 수정자 메서드 방식을 사용하는 방법이다.
+
+> 참고: @Autowired 의 기본 동작은 주입할 대상이 없으면 오류가 발생한다. 주입할 대상이 없어도 동작하게 하려면 @Autowired(required = false) 로 지정하면 된다.
+
+<img width="654" alt="스크린샷 2023-01-01 오후 6 42 41" src="https://user-images.githubusercontent.com/96857599/210166605-c22a60dc-fae4-4c95-b071-8efc5f9fa120.png">
+
+> 참고: 자바빈 프로퍼티, 자바에서는 과거부터 필드의 값을 직접 변경하지 않고, setXxx, getXxx 라는 메서드를 통해서 값을 읽거나 수정하는 규칙을 만들었는데, 그것이 자바빈 프로퍼티 규약이다. 더 자세한 내용이 궁금하면 자바빈 프로퍼티로 검색해보자.
+
+- 자바빈 프로퍼티 규약 예시
+
+```java
+ class Data {
+      private int age;
+      public void setAge(int age) {
+        this.age = age;
+      }
+      public int getAge() {
+        return age;
+	  }
+}
+```
+
+#### 필드 주입
+
+<img width="1170" alt="스크린샷 2023-01-01 오후 6 55 08" src="https://user-images.githubusercontent.com/96857599/210166870-9733ea62-47e8-4b2f-8659-9f009f3be956.png">
+
+<img width="1046" alt="스크린샷 2023-01-01 오후 6 54 50" src="https://user-images.githubusercontent.com/96857599/210166865-833f5718-8bab-4ee1-8b40-bbed7e04057c.png">
+
+- 이름 그대로 필드에 바로 주입하는 방법이다.
+- 특징
+	- 코드가 간결해서 많은 개발자들을 유혹하지만 외부에서 변경이 불가능해서 테스트 하기 힘들다는 치명적인 단점이 있다.
+	- DI 프레임워크가 없으면 아무것도 할 수 없다.
+	- 사용하지 말자!
+		- 애플리케이션의 실제 코드와 관계 없는 테스트 코드
+		- 스프링 설정을 목적으로 하는 @Configuration 같은 곳에서만 특별한 용도로 사용
+```java
+@Component
+    public class OrderServiceImpl implements OrderService {
+        @Autowired
+        private MemberRepository memberRepository;
+        @Autowired
+        private DiscountPolicy discountPolicy;
+}
+```
+
+> 참고: 순수한 자바 테스트 코드에는 당연히 @Autowired가 동작하지 않는다. @SpringBootTest 처럼 스프링 컨테이너를 테스트에 통합한 경우에만 가능하다.
+> 참고: 다음 코드와 같이 @Bean 에서 파라미터에 의존관계는 자동 주입된다. 수동 등록시 자동 등록된 빈의 의존관계가 필요할 때 문제를 해결할 수 있다.
+```java
+@Bean
+OrderService orderService(MemberRepository memberRepoisitory, DiscountPolicy
+discountPolicy) {
+    new OrderServiceImpl(memberRepository, discountPolicy)
+}
+```
+
+#### 일반 메서드 주입
+- 일반 메서드를 통해서 주입 받을 수 있다.
+- 특징
+	- 한번에 여러 필드를 주입 받을 수 있다.
+	- 일반적으로 잘 사용하지 않는다.
+
+> 참고: 어쩌면 당연한 이야기이지만 의존관계 자동 주입은 스프링 컨테이너가 관리하는 스프링 빈이어야 동작한다. 스프링 빈이 아닌 Member 같은 클래스에서 @Autowired 코드를 적용해도 아무 기능도 동작하지 않는다.
