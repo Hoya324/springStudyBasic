@@ -1087,3 +1087,182 @@ discountPolicy) {
 	- 일반적으로 잘 사용하지 않는다.
 
 > 참고: 어쩌면 당연한 이야기이지만 의존관계 자동 주입은 스프링 컨테이너가 관리하는 스프링 빈이어야 동작한다. 스프링 빈이 아닌 Member 같은 클래스에서 @Autowired 코드를 적용해도 아무 기능도 동작하지 않는다.
+
+### 옵션 처리
+
+주입할 스프링 빈이 없어도 동작해야 할 때가 있다.
+그런데 @Autowired만 사용하면 required 옵션의 기본값이 true 로 되어 있어서 자동 주입 대상이 없으면 오류가 발생한다.
+
+자동 주입 대상을 옵션으로 처리하는 방법은 다음과 같다.
+- @Autowired(required=false) : 자동 주입할 대상이 없으면 수정자 메서드 자체가 호출 안됨 - org.springframework.lang.
+- @Nullable : 자동 주입할 대상이 없으면 null이 입력된다. 
+- Optional<> : 자동 주입할 대상이 없으면 Optional.empty가 입력된다.
+
+<img width="1293" alt="스크린샷 2023-01-03 오후 3 01 47" src="https://user-images.githubusercontent.com/96857599/210306713-bb40a123-7728-4246-8f19-30774e897ccc.png">
+
+- Member는 스프링 빈이 아니다
+- setNoBean1()은 @Autowired(required = false)이므로 호출 자체가 안 된다.
+
+
+### 생성자 주입을 선택하는 이유
+
+1. 불변
+- 대부분의 의존관계 주입은 한번 일어나면 애플리케이션 종료시점까지 의존관계를 변경할 일이 없다. 오히려 대부분의 의존관계는 애플리케이션 종료 전까지 변하면 안된다.(불변해야 한다.)
+- 수정자 주입을 사용하면, setXxx 메서드를 public으로 열어두어야 한다.
+- 누군가 실수로 변경할 수 도 있고, 변경하면 안되는 메서드를 열어두는 것은 좋은 설계 방법이 아니다. 
+- 생성자 주입은 객체를 생성할 때 딱 1번만 호출되므로 이후에 호출되는 일이 없다. 따라서 불변하게 설계할 수 있다.
+
+2. 누락
+프레임워크 없이 순수한 자바 코드를 단위 테스트 하는 경우에 다음과 같이 수정자 의존관계인 경우
+<img width="1253" alt="스크린샷 2023-01-03 오후 3 18 09" src="https://user-images.githubusercontent.com/96857599/210308225-65227387-38eb-483f-b47c-9fdfff4cae3c.png">
+
+- @Autowired가 프레임워크 안에서 동작할 때는 의존관계가 없으면 오류가 발생하지만, 지금은 프레임워크
+없이 순수한 자바 코드로만 단위 테스트를 수행하고 있다.
+
+3. final 키워드
+생성자 주입을 사용하면 필드에 final 키워드를 사용할 수 있다. 그래서 생성자에서 혹시라도 값이 설정되지 않는 오류를 컴파일 시점에 막아준다.
+<img width="1113" alt="스크린샷 2023-01-03 오후 3 23 23" src="https://user-images.githubusercontent.com/96857599/210308711-22857761-ecd3-4ecb-8df8-cfa9f2b11303.png">
+- 잘 보면 필수 필드인 discountPolicy 에 값을 설정해야 하는데, 이 부분이 누락되었다. 자바는 컴파일 시점에 다음 오류를 발생시킨다.
+- java: variable discountPolicy might not have been initialized
+- 기억하자! 컴파일 오류는 세상에서 가장 빠르고, 좋은 오류다!
+ 
+> 참고: 수정자 주입을 포함한 나머지 주입 방식은 모두 생성자 이후에 호출되므로, 필드에 final 키워드를 사용할 수 없다. 오직 생성자 주입 방식만 final 키워드를 사용할 수 있다.
+
+#### 정리
+- 생성자 주입 방식을 선택하는 이유는 여러가지가 있지만, 프레임워크에 의존하지 않고, 순수한 자바 언어의 특징을 잘 살리는 방법이기도 하다.
+- 기본으로 생성자 주입을 사용하고, 필수 값이 아닌 경우에는 수정자 주입 방식을 옵션으로 부여하면 된다. 생성자 주입과 수정자 주입을 동시에 사용할 수 있다.
+- 항상 생성자 주입을 선택해라! 그리고 가끔 옵션이 필요하면 수정자 주입을 선택해라. 필드 주입은 사용하지 않는게 좋다.
+
+### 롬복과 최신 트랜드
+- build.gradle에 롬복 설정 추가
+<img width="1279" alt="스크린샷 2023-01-03 오후 3 32 11" src="https://user-images.githubusercontent.com/96857599/210309562-468669dc-2a73-4d25-b86b-b598ef557530.png">
+
+- Lombok plugin 설치
+<img width="1094" alt="스크린샷 2023-01-03 오후 3 35 35" src="https://user-images.githubusercontent.com/96857599/210309906-8c8b30e3-7585-47f8-8395-5d69efdbafa8.png">
+
+- Preferences -> annotation proces -> Compiler -> Annotation Processors에서 Enable annotation processing 선
+<img width="1094" alt="스크린샷 2023-01-03 오후 3 36 30" src="https://user-images.githubusercontent.com/96857599/210309989-3eca658a-3e7f-4987-a31d-84a5b81ac9d4.png">
+
+기본 코드
+```java
+
+@Component
+public class OrderServiceImpl implements OrderService {
+	private final MemberRepository memberRepository;
+	private final DiscountPolicy discountPolicy;
+
+	@Autowired
+        public OrderServiceImpl(MemberRepository memberRepository, DiscountPolicy
+    discountPolicy) {
+            this.memberRepository = memberRepository;
+            this.discountPolicy = discountPolicy;
+        }
+}
+```
+
+- Lombok 라이브러리 사용시 getter & setter 메소드를 어노테이션으로 해결할 수 있다.
+<img width="534" alt="스크린샷 2023-01-03 오후 3 41 15" src="https://user-images.githubusercontent.com/96857599/210310426-be213f77-efd4-436a-bd9e-b01a35bc116b.png">
+
+<img width="887" alt="스크린샷 2023-01-03 오후 3 43 38" src="https://user-images.githubusercontent.com/96857599/210310640-fd168b54-a0d6-47e1-8320-779a1830a3cc.png">
+
+- @RequiredArgsConstructor가 객체에서 final이 붙은 것을 파라미터로 받아서 생성자를 대신 생성해줌. (cmd + F12를 통해 알 수 있음.)
+
+<img width="887" alt="스크린샷 2023-01-03 오후 3 50 29" src="https://user-images.githubusercontent.com/96857599/210311315-57483f51-6003-4be2-b2c5-ddd2d049766e.png">
+<img width="586" alt="스크린샷 2023-01-03 오후 3 52 48" src="https://user-images.githubusercontent.com/96857599/210311570-454be47e-67c7-4cc7-879a-e01b1505fd15.png">
+
+최종 코드
+<img width="1126" alt="스크린샷 2023-01-03 오후 3 54 37" src="https://user-images.githubusercontent.com/96857599/210311751-00be0407-828e-4e7d-abc8-9bee8815e6da.png">
+롬복이 자바의 애노테이션 프로세서라는 기능을 이용해서 컴파일 시점에 생성자 코드를 자동으로 생성해준다.
+
+#### 정리
+최근에는 생성자를 딱 1개 두고, @Autowired를 생략하는 방법을 주로 사용한다. 여기에 Lombok 라이브러리의 @RequiredArgsConstructor 함께 사용하면 기능은 다 제공하면서, 코드는 깔끔하게 사용할 수 있다.
+
+### 조회 빈이 2개 이상 - 문제
+
+@Autowired는 타입(Type)으로 조회한다.
+```java
+@Autowired
+private DiscountPolicy discountPolicy
+```  
+
+타입으로 조회하기 때문에, 마치 다음 코드와 유사하게 동작한다. (실제로는 더 많은 기능을 제공한다.) ac.getBean(DiscountPolicy.class)
+
+스프링 빈 조회에서 학습했듯이 타입으로 조회하면 선택된 빈이 2개 이상일 때 문제가 발생한다. DiscountPolicy 의 하위 타입인 FixDiscountPolicy , RateDiscountPolicy 둘다 스프링 빈으로 선언해보자.
+<img width="419" alt="스크린샷 2023-01-03 오후 4 06 41" src="https://user-images.githubusercontent.com/96857599/210312918-f163d4e3-8180-4c8f-be7a-cc280a93b6a7.png">
+<img width="402" alt="스크린샷 2023-01-03 오후 4 06 51" src="https://user-images.githubusercontent.com/96857599/210312944-07e1e02a-6c43-43a8-b770-bc68d19b285c.png">
+
+NoUniqueBeanDefinitionException 오류가 발생한다.
+<img width="901" alt="스크린샷 2023-01-03 오후 4 08 21" src="https://user-images.githubusercontent.com/96857599/210313109-87766c3e-a4c5-44c4-ba6d-6f31ea42afc9.png">
+
+<img width="857" alt="스크린샷 2023-01-03 오후 4 06 00" src="https://user-images.githubusercontent.com/96857599/210312836-d4f548de-7d6c-4234-b9f1-ea9a5ae53fe1.png">
+오류메시지가 친절하게도 하나의 빈을 기대했는데 fixDiscountPolicy , rateDiscountPolicy 2개가 발견되었다고 알려준다.
+
+이때 하위 타입으로 지정할 수 도 있지만, 하위 타입으로 지정하는 것은 DIP를 위배하고 유연성이 떨어진다. 그리고 이름만 다르고, 완전히 똑같은 타입의 스프링 빈이 2개 있을 때 해결이 안된다.
+스프링 빈을 수동 등록해서 문제를 해결해도 되지만, 의존 관계 자동 주입에서 해결하는 여러 방법이 있다.
+
+
+### 조회 대상 빈이 2개 이상일 때 해결방법
+- @Autowired 필드 명 매칭
+- @Quilifier -> @Quilifier끼리 매칭 -> 빈 이름 매칭
+- @Primary 사용
+
+#### @Autowired 필드 명 매칭(빈 이름으로 매칭을 시도하는 것)
+- DiscountPolicy의 객체 인스턴스 명을 discountPolicy -> rateDiscountPolicy
+<img width="1194" alt="스크린샷 2023-01-03 오후 4 21 01" src="https://user-images.githubusercontent.com/96857599/210314369-20d8ce57-8444-4ff5-ba13-be2c87c0de90.png">
+
+- 테스트 성공
+<img width="1194" alt="스크린샷 2023-01-03 오후 4 22 56" src="https://user-images.githubusercontent.com/96857599/210314558-9acd3988-1cbd-4c21-a9b6-232fe99cc788.png">
+
+필드 명이 rateDiscountPolicy 이므로 정상 주입된다.
+필드 명 매칭은 먼저 타입 매칭을 시도 하고 그 결과에 여러 빈이 있을 때 추가로 동작하는 기능이다.
+
+@Autowired 매칭 정리
+1. 타입 매칭
+2. 타입 매칭의 결과가 2개 이상일 때 필드 명, 파라미터 명으로 빈 이름 매칭
+
+#### @Qualifier 사용
+@Qualifier 는 추가 구분자를 붙여주는 방법이다.
+주입시 추가적인 방법을 제공하는 것이지 빈 이름을 변경하는 것은 아니다.
+
+
+빈 등록시 @Qualifier를 붙여 준다.
+<img width="475" alt="스크린샷 2023-01-03 오후 4 27 20" src="https://user-images.githubusercontent.com/96857599/210314972-cb20fb57-e8a1-431e-a425-2814e17b083e.png">
+
+<img width="475" alt="스크린샷 2023-01-03 오후 4 28 01" src="https://user-images.githubusercontent.com/96857599/210315029-27d9fcf5-1cbd-4c5e-836f-33734f4f10c7.png">
+
+- 중복되는 생성자의 객체 앞에 @Qualifier()을 넣어준다.
+<img width="475" alt="스크린샷 2023-01-03 오후 4 28 01" src="https://user-images.githubusercontent.com/96857599/210315029-27d9fcf5-1cbd-4c5e-836f-33734f4f10c7.png">
+
+<img width="1441" alt="스크린샷 2023-01-03 오후 4 30 17" src="https://user-images.githubusercontent.com/96857599/210315249-8a8750a5-2b82-4ec0-89c9-61b5caaf50e5.png">
+
+@Qualifier 로 주입할 때 @Qualifier("mainDiscountPolicy")를 못찾으면 어떻게 될까?
+그러면 mainDiscountPolicy라는 이름의 스프링 빈을 추가로 찾는다. 
+하지만 경험상 @Qualifier는 @Qualifier를 찾는 용도로만 사용하는게 명확하고 좋다.
+
+@Qualifier 정리
+1. @Qualifier끼리 매칭
+2. 빈 이름 매칭
+3. NoSuchBeanDefinitionException 예외 발생
+
+#### @Primary 사용 (자주 사용하는 방법)
+@Primary 는 우선순위를 정하는 방법이다. @Autowired 시에 여러 빈이 매칭되면 @Primary 가 우선권을 가진다.
+
+<img width="983" alt="스크린샷 2023-01-03 오후 5 27 37" src="https://user-images.githubusercontent.com/96857599/210322091-92630294-fa4e-444e-9c58-67c96bfd7781.png">
+
+여기까지 보면 @Primary와 @Qualifier 중에 어떤 것을 사용하면 좋을지 고민이 될 것이다.
+@Qualifier 의 단점은 주입 받을 때 다음과 같이 모든 코드에 @Qualifier를 붙여주어야 한다는 점이다.
+
+#### 우선순위
+@Primary는 기본값 처럼 동작하는 것이고, @Qualifier는 매우 상세하게 동작한다. 이런 경우 어떤 것이 우선권을 가져갈까? 
+스프링은 자동보다는 수동이, 넒은 범위의 선택권 보다는 좁은 범위의 선택권이 우선 순위가 높다. 따라서 여기서도 @Qualifier가 우선권이 높다.
+
+### 어노테이션 직접 만들기
+@Qualifier("mainDiscountPolicy") 이렇게 문자를 적으면 컴파일시 타입 체크가 안된다. 다음과 같은 애노테이션을 만들어서 문제를 해결할 수 있다.
+
+<img width="1297" alt="스크린샷 2023-01-03 오후 5 35 02" src="https://user-images.githubusercontent.com/96857599/210323000-0f34e345-879c-4d19-b98f-7d78d8308ab9.png">
+<img width="1297" alt="스크린샷 2023-01-03 오후 5 35 13" src="https://user-images.githubusercontent.com/96857599/210323027-b43e9fd1-7036-4b14-847d-787a0e3c68fb.png">
+<img width="1340" alt="스크린샷 2023-01-03 오후 5 35 49" src="https://user-images.githubusercontent.com/96857599/210323129-3a0dc49d-7e74-4b86-8280-95c260162021.png">
+
+어노테이션에는 상속이라는 개념이 없다. 이렇게 여러 애노테이션을 모아서 사용하는 기능은 스프링이 지원해주는 기능이다. @Qulifier 뿐만 아니라 다른 애노테이션들도 함께 조합해서 사용할 수 있다. 단적으로 @Autowired도 재정의 할 수 있다. 물론 스프링이 제공하는 기능을 뚜렷
+
+
