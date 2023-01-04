@@ -1266,3 +1266,33 @@ NoUniqueBeanDefinitionException 오류가 발생한다.
 어노테이션에는 상속이라는 개념이 없다. 이렇게 여러 애노테이션을 모아서 사용하는 기능은 스프링이 지원해주는 기능이다. @Qulifier 뿐만 아니라 다른 애노테이션들도 함께 조합해서 사용할 수 있다. 단적으로 @Autowired도 재정의 할 수 있다. 물론 스프링이 제공하는 기능을 뚜렷
 
 
+### 조회한 빈이 모두 필요할 때, List, Map
+
+의도적으로 정말 해당 타입의 스프링 빈이 다 필요한 경우도 있다.
+예를 들어서 할인 서비스를 제공하는데, 클라이언트가 할인의 종류(rate, fix)를 선택할 수 있다고 가정해보자. 
+스프링을 사용하면 소위 말하는 전략 패턴을 매우 간단하게 구현할 수 있다.
+	
+- Map에는 key(Stirng), value(스프링 빈)이, List에는 value(스프링 빈)이 저장된다.
+<img width="1582" alt="스크린샷 2023-01-04 오후 10 15 08" src="https://user-images.githubusercontent.com/96857599/210563039-26a9a44a-a0d1-40b2-8300-84782b5c3758.png">
+<img width="1368" alt="스크린샷 2023-01-04 오후 10 52 00" src="https://user-images.githubusercontent.com/96857599/210569664-9cde46ef-462a-46dc-8d1a-f5b531bb6b42.png">
+<img width="1368" alt="스크린샷 2023-01-04 오후 10 51 45" src="https://user-images.githubusercontent.com/96857599/210569608-0e8258f2-624c-4042-9e73-c7d503f650d4.png">
+	
+로직 분석
+	
+- DiscountService는 Map으로 모든 DiscountPolicy를 주입받는다. 이때 fixDiscountPolicy, rateDiscountPolicy가 주입된다.
+- discount() 메서드는 discountCode로 "fixDiscountPolicy"가 넘어오면 map에서 fixDiscountPolicy 스프링 빈을 찾아서 실행한다. 물론 “rateDiscountPolicy”가 넘어오면 rateDiscountPolicy 스프링 빈을 찾아서 실행한다.
+	
+### 자동, 수동의 올바른 실무 운영 기준
+	
+#### 편리한 자동 기능을 기본으로 사용하자
+그러면 어떤 경우에 컴포넌트 스캔과 자동 주입을 사용하고, 어떤 경우에 설정 정보를 통해서 수동으로 빈을 등록하고, 의존관계도 수동으로 주입해야 할까?
+	
+결론부터 이야기하면, 스프링이 나오고 시간이 갈 수록 점점 자동을 선호하는 추세다. 스프링은 @Component 뿐만 아니라 @Controller , @Service , @Repository 처럼 계층에 맞추어 일반적인 애플리케이션 로직을 자동으로 스캔할 수 있도록 지원한다. 거기에 더해서 최근 스프링 부트는 컴포넌트 스캔을 기본으로 사용하고, 스프링 부트의 다양한 스프링 빈들도 조건이 맞으면 자동으로 등록하도록 설계했다.
+	
+설정 정보를 기반으로 애플리케이션을 구성하는 부분과 실제 동작하는 부분을 명확하게 나누는 것이 이상적이지만, 개발자 입장에서 스프링 빈을 하나 등록할 때 @Component 만 넣어주면 끝나는 일을 @Configuration 설정 정보에 가서 @Bean 을 적고, 객체를 생성하고, 주입할 대상을 일일이 적어주는 과정은 상당히 번거롭다.
+또 관리할 빈이 많아서 설정 정보가 커지면 설정 정보를 관리하는 것 자체가 부담이 된다. 그리고 결정적으로 자동 빈 등록을 사용해도 OCP, DIP를 지킬 수 있다.
+	
+	
+#### 
+	
+
