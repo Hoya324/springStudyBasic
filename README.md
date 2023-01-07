@@ -1379,3 +1379,86 @@ public class DiscountPolicyConfig {
 - 인터페이스(InitializingBean, DisposableBean)
 - 설정 정보에 초기화 메서드, 종료 메서드 지정
 - @PostConstruct, @PreDestroy 애노테이션 지원
+
+### 인터페이스 InitializingBean, DisposableBean
+	
+- 인터페이스 InitializingBean, DisposableBean 추가
+	
+<img width="612" alt="스크린샷 2023-01-07 오후 1 20 35" src="https://user-images.githubusercontent.com/96857599/211130725-088ef5a9-ae45-454c-909f-bf322e358657.png">
+<img width="1356" alt="스크린샷 2023-01-07 오후 1 20 45" src="https://user-images.githubusercontent.com/96857599/211130733-71bfb433-2db2-4284-9e23-42c634b1d923.png">
+
+- 출력 결과
+<img width="1356" alt="스크린샷 2023-01-07 오후 1 21 23" src="https://user-images.githubusercontent.com/96857599/211130747-a9493cf3-1f5b-46d5-bde6-99c35f51e4d7.png">
+
+<img width="884" alt="스크린샷 2023-01-07 오후 1 21 43" src="https://user-images.githubusercontent.com/96857599/211130749-b3ccf5cc-6aaa-4350-a928-57876e89c476.png">
+
+- 출력 결과를 보면 초기화 메서드가 주입 완료 후에 적절하게 호출 된 것을 확인할 수 있다. 
+- 그리고 스프링 컨테이너의 종료가 호출되자 소멸 메서드가 호출 된 것도 확인할 수 있다.
+	
+#### 초기화, 소멸 인터페이스 단점
+- 이 인터페이스는 스프링 전용 인터페이스다. 해당 코드가 스프링 전용 인터페이스에 의존한다. 
+- 초기화, 소멸 메서드의 이름을 변경할 수 없다.
+- 내가 코드를 고칠 수 없는 외부 라이브러리에 적용할 수 없다.
+
+> 참고: 인터페이스를 사용하는 초기화, 종료 방법은 스프링 초창기에 나온 방법들이고, 지금은 다음의 더 나은 방법들이 있어서 거의 사용하지 않는다.
+	
+### 빈 등록 초기화, 소멸 메서드 지정
+
+- 인터페이스 InitializingBean, DisposableBean를 삭제하고, 메소드 이름을 설정한다.
+<img width="966" alt="스크린샷 2023-01-07 오후 1 32 20" src="https://user-images.githubusercontent.com/96857599/211131070-96eae377-11ef-4351-96e6-c6171c7d3e4f.png">
+
+- 설정 정보에 @Bean(initMethod = "init", destroyMethod = "close") 처럼 초기화, 소멸 메서드를
+지정할 수 있다.
+<img width="966" alt="스크린샷 2023-01-07 오후 1 33 22" src="https://user-images.githubusercontent.com/96857599/211131104-8a734bc6-91ce-4065-a8e5-c461076d6639.png">
+
+#### 설정 정보 사용 특징
+메서드 이름을 자유롭게 줄 수 있다.
+스프링 빈이 스프링 코드에 의존하지 않는다.
+코드가 아니라 설정 정보를 사용하기 때문에 코드를 고칠 수 없는 외부 라이브러리에도 초기화, 종료 메서드를 적용할 수 있다.
+	
+#### 종료 메서드 추론
+- @Bean의 destroyMethod 속성에는 아주 특별한 기능이 있다.
+- 라이브러리는 대부분 close , shutdown 이라는 이름의 종료 메서드를 사용한다.
+- @Bean의 destroyMethod는 기본값이 (inferred) (추론)으로 등록되어 있다.
+- 이 추론 기능은 close , shutdown라는 이름의 메서드를 자동으로 호출해준다. 이름 그대로 종료 메서드를 추론해서 호출해준다.
+- 따라서 직접 스프링 빈으로 등록하면 종료 메서드는 따로 적어주지 않아도 잘 동작한다.
+- 추론 기능을 사용하기 싫으면 destroyMethod="" 처럼 빈 공백을 지정하면 된다.
+	
+	
+### 어노테이션 @PostConstruct, @PreDestroy
+- 이거 쓰면 된다.
+	
+<img width="922" alt="스크린샷 2023-01-07 오후 1 38 19" src="https://user-images.githubusercontent.com/96857599/211131238-78f11948-8edc-499b-82c1-ae873e6a81ec.png">
+	
+- javax로 import되는 것은 자바에서 공식 지원하는 것이다.
+<img width="325" alt="스크린샷 2023-01-07 오후 1 38 33" src="https://user-images.githubusercontent.com/96857599/211131245-cead3d40-a96e-4b75-bed1-fd3be142483a.png">
+
+<img width="966" alt="스크린샷 2023-01-07 오후 1 39 45" src="https://user-images.githubusercontent.com/96857599/211131299-5e9382d3-cda9-48c5-87cb-4e1fd958941e.png">
+
+#### @PostConstruct, @PreDestroy 애노테이션 특징
+- 최신 스프링에서 가장 권장하는 방법이다.
+- 애노테이션 하나만 붙이면 되므로 매우 편리하다.
+- 패키지를 잘 보면 javax.annotation.PostConstruct 이다. 스프링에 종속적인 기술이 아니라 JSR-250 라는 자바 표준이다. 따라서 스프링이 아닌 다른 컨테이너에서도 동작한다.
+- 컴포넌트 스캔과 잘 어울린다.
+- 유일한 단점은 외부 라이브러리에는 적용하지 못한다는 것이다. 외부 라이브러리를 초기화, 종료 해야 하면 @Bean의 기능을 사용하자.
+
+#### 정리
+
+- @PostConstruct, @PreDestroy 애노테이션을 사용하자
+- 코드를 고칠 수 없는 외부 라이브러리를 초기화, 종료해야 하면 @Bean 의 initMethod, destroyMethod를 사용하자.
+	
+### 빈스코프란?
+
+지금까지 우리는 스프링 빈이 스프링 컨테이너의 시작과 함께 생성되어서 스프링 컨테이너가 종료될 때 까지 유지된다고 학습했다. 이것은 스프링 빈이 기본적으로 싱글톤 스코프로 생성되기 때문이다. 스코프는 번역 그대로 빈이 존재할 수 있는 범위를 뜻한다.
+
+	
+스프링은 다음과 같은 다양한 스코프를 지원한다.
+- 싱글톤: 기본 스코프, 스프링 컨테이너의 시작과 종료까지 유지되는 가장 넓은 범위의 스코프이다. 
+- 프로토타입: 스프링 컨테이너는 프로토타입 빈의 생성과 의존관계 주입까지만 관여하고 더는 관리하지 않는 매우 짧은 범위의 스코프이다.
+- 웹 관련 스코프
+	- request: 웹 요청이 들어오고 나갈때 까지 유지되는 스코프이다. 
+	- session: 웹 세션이 생성되고 종료될 때 까지 유지되는 스코프이다. 
+	- application: 웹의 서블릿 컨텍스트와 같은 범위로 유지되는 스코프이다.
+
+
+	
