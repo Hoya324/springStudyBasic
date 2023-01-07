@@ -1763,4 +1763,84 @@ server.port=9090
   current thread; consider defining a scoped proxy for this bean if you intend to
   refer to it from a singleton;
 ```
+	
+### 스코프와 Provider
+	
+- ObjectProvider을 사용한다. (MyLogger을 받는게 아니라 MyLogger를 받을 수 있는 제공자를 주입받음)
+<img width="1432" alt="스크린샷 2023-01-07 오후 7 03 57" src="https://user-images.githubusercontent.com/96857599/211144922-b29a792f-1a54-4d79-9001-bede324df1fe.png">
+<img width="1432" alt="스크린샷 2023-01-07 오후 7 06 57" src="https://user-images.githubusercontent.com/96857599/211145017-0e3563b8-2b42-484b-bb4c-c2693bfebf69.png">
+- 로그 (4개의 요청이 들어온 것을 확인할 수 있다.)
+<img width="913" alt="스크린샷 2023-01-07 오후 7 08 40" src="https://user-images.githubusercontent.com/96857599/211145086-f8b6a628-3898-4c0b-9388-b908d9d3ff3f.png">
 
+- ObjectProvider 덕분에 ObjectProvider.getObject()를 호출하는 시점까지 request scope 빈의 생성을 지연할 수 있다.(스프링 컨테이너에게 요청하는 것을 지연시킬 수 있음)
+- ObjectProvider.getObject()를 호출하시는 시점에는 HTTP 요청이 진행중이므로 request scope 빈의 생성이 정상 처리된다.
+- ObjectProvider.getObject()를 LogDemoController, LogDemoService에서 각각 한번씩 따로 호출해도 같은 HTTP 요청이면 같은 스프링 빈이 반환된다! 
+	
+#### 정리
+LogDemoController에 있는 ObjectProvider.getObject()는 MyLogger빈을 생성하고LogDemoService에 있는 ObjectProvider.getObject()는 스프링컨테이너에 이미 생성된 MyLogger빈을 반환한다고 하셨는데, 그 이유가 같은 http요청에 대해서는 http요청이 끝나기 전까지 동일한 request scope bean이 사용되기때문
+	
+	
+1. HTTP가 처음 요청 받으면 LogDemoController에 있는 ObjectProvider.getObject()에서 MyLogger 빈을 생성한다.
+2. 이때, MyLogger에 있는 @PostConstruct init 메소드가 실행된다. -> uuid랑 HTTP request랑 묶음.(setRequestURL())
+3. myLoggerd에서 log를 찍을 땐 이미 uuid와 requestURL이 있는 상태
+4. logig() 실행
+5. @PreDestroy close() 메소드가 실행
+-> request scope bean이 사용되기 때문에 HTTP 요청이 들어오고 끝날 때까지 하나의 MyLogger 빈을 사용하게 됨. 
+
+
+### 스코프와 프록시
+	
+<img width="1289" alt="스크린샷 2023-01-07 오후 7 38 23" src="https://user-images.githubusercontent.com/96857599/211146112-d7201e0a-235a-4376-ad26-552767a0745c.png">
+<img width="1289" alt="스크린샷 2023-01-07 오후 7 38 47" src="https://user-images.githubusercontent.com/96857599/211146129-55ae702a-3b68-4429-92bb-9d33dd707f18.png">
+
+<img width="1289" alt="스크린샷 2023-01-07 오후 7 38 36" src="https://user-images.githubusercontent.com/96857599/211146121-fcf4a3a9-0984-4bea-b3e4-312ea29853ea.png">
+
+```
+@Component
+@Scope(value = "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
+public class MyLogger {
+}
+```
+- 여기가 핵심이다. proxyMode = ScopedProxyMode.TARGET_CLASS 를 추가해주자. 
+	- 적용 대상이 인터페이스가 아닌 클래스면 TARGET_CLASS 를 선택
+	- 적용 대상이 인터페이스면 INTERFACES 를 선택
+- 이렇게 하면 MyLogger의 가짜 프록시 클래스를 만들어두고 HTTP request와 상관 없이 가짜 프록시 클래스를 다른 빈에 미리 주입해 둘 수 있다.
+
+입력
+<img width="594" alt="스크린샷 2023-01-07 오후 7 42 48" src="https://user-images.githubusercontent.com/96857599/211146280-40719c66-d513-4fef-ac5f-a618009fafcc.png">
+출력 
+<img width="953" alt="스크린샷 2023-01-07 오후 7 42 33" src="https://user-images.githubusercontent.com/96857599/211146267-5cb1def8-1099-4e6f-b316-e5ec076df305.png">
+
+	
+#### CGLIB라는 라이브러리로 내 클래스를 상속 받은 가짜 프록시 객체를 만들어서 주입한다.
+- @Scope 의 proxyMode = ScopedProxyMode.TARGET_CLASS) 를 설정하면 스프링 컨테이너는 CGLIB 라는 바이트코드를 조작하는 라이브러리를 사용해서, MyLogger를 상속받은 가짜 프록시 객체를 생성한다.
+- 결과를 확인해보면 우리가 등록한 순수한 MyLogger 클래스가 아니라 MyLogger$ $EnhancerBySpringCGLIB 이라는 클래스로 만들어진 객체가 대신 등록된 것을 확인할 수 있다. 그리고 스프링 컨테이너에 "myLogger"라는 이름으로 진짜 대신에 이 가짜 프록시 객체를 등록한다.
+- ac.getBean("myLogger", MyLogger.class)로 조회해도 프록시 객체가 조회되는 것을 확인할 수 있다.
+- 그래서 의존관계 주입도 이 가짜 프록시 객체가 주입된다.
+	
+<img width="553" alt="스크린샷 2023-01-07 오후 7 44 15" src="https://user-images.githubusercontent.com/96857599/211146326-7163b857-6c87-43fb-b033-f591e84b3bce.png">
+
+	
+#### 가짜 프록시 객체는 요청이 오면 그때 내부에서 진짜 빈을 요청하는 위임 로직이 들어있다.
+- 가짜 프록시 객체는 내부에 진짜 myLogger를 찾는 방법을 알고 있다.
+- 클라이언트가 myLogger.logic()을 호출하면 사실은 가짜 프록시 객체의 메서드를 호출한 것이다. 
+- 가짜 프록시 객체는 request 스코프의 진짜 myLogger.logic()를 호출한다.
+- 가짜 프록시 객체는 원본 클래스를 상속 받아서 만들어졌기 때문에 이 객체를 사용하는 클라이언트 입장에서는 사실 원본인지 아닌지도 모르게, 동일하게 사용할 수 있다(다형성)
+	
+	
+#### 동작 정리
+- CGLIB라는 라이브러리로 내 클래스를 상속 받은 가짜 프록시 객체를 만들어서 주입한다.
+- 이 가짜 프록시 객체는 실제 요청이 오면 그때 내부에서 실제 빈을 요청하는 위임 로직이 들어있다.
+- 가짜 프록시 객체는 실제 request scope와는 관계가 없다. 그냥 가짜이고, 내부에 단순한 위임 로직만 있고, 싱글톤처럼 동작한다.
+
+	
+#### 특징 정리
+- 프록시 객체 덕분에 클라이언트는 마치 싱글톤 빈을 사용하듯이 편리하게 request scope를 사용할 수 있다.
+- 사실 Provider를 사용하든, 프록시를 사용하든 핵심 아이디어는 **진짜 객체 조회를 꼭 필요한 시점까지 지연처리 한다는 점이다**.
+- 단지 애노테이션 설정 변경만으로 원본 객체를 프록시 객체로 대체할 수 있다. 이것이 바로 **다형성과 DI 컨테이너**가 가진 큰 강점이다.
+- 꼭 웹 스코프가 아니어도 프록시는 사용할 수 있다.
+
+	
+#### 주의점
+- 마치 싱글톤을 사용하는 것 같지만 다르게 동작하기 때문에 결국 주의해서 사용해야 한다.
+- 이런 특별한 scope는 꼭 필요한 곳에만 최소화해서 사용하자, 무분별하게 사용하면 유지보수하기 어려워진다.
